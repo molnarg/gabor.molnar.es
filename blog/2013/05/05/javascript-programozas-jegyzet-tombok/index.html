@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -99,135 +100,128 @@
 				<p>Sokszor van arra szükség, hogy valamilyen elemek listáját kezeljük. Egy webshop esetén például:</p>
 
 <ul>
-  <li>termékek listája</li>
-  <li>ügyfelek listája</li>
-  <li>megrendelések listája</li>
+<li>termékek listája</li>
+<li>ügyfelek listája</li>
+<li>megrendelések listája</li>
 </ul>
 
 <p>Az ilyen adatsorok kezelésére az összes programozási nyelv biztosít lehetőséget. Ezeket <strong>tömbök</strong>nek (angolul: <strong>array</strong>), vagy <strong>listák</strong>nak szokás hívni (a két fogalom között sok nyelv különbséget tesz valamilyen szempont alapján, a JavaScript-ben viszont a kettő között nincs különbség).</p>
 
 <!-- more -->
 
-<h2 id="a-tmbk-mint-objektumok">A tömbök mint objektumok</h2>
+<h2>A tömbök mint objektumok</h2>
 
 <p>A tömbök jól modellezhetők hagyományos JavaScript objektumokkal. Egy terméklistát egy webalkalmazásban kódjában így is megadhatunk:</p>
-
-<p><code>javascript
-var termeklista = {
-  0: 'zöld pengető',
-  1: 'kék pengető',
-  2: 'húrok',
-  3: 'erősítő',
-  4: 'hangfal'
-}
-</code></p>
-
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">termeklista</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="mi">0</span><span class="o">:</span> <span class="s1">&#39;zöld pengető&#39;</span><span class="p">,</span>
+  <span class="mi">1</span><span class="o">:</span> <span class="s1">&#39;kék pengető&#39;</span><span class="p">,</span>
+  <span class="mi">2</span><span class="o">:</span> <span class="s1">&#39;húrok&#39;</span><span class="p">,</span>
+  <span class="mi">3</span><span class="o">:</span> <span class="s1">&#39;erősítő&#39;</span><span class="p">,</span>
+  <span class="mi">4</span><span class="o">:</span> <span class="s1">&#39;hangfal&#39;</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>A tömbök nagyon gyakran előjönnek a programozásban, ezért létezik egy kényelmesebben használható <strong>rövidített formátum</strong>, amivel gyakorlatilag ugyanezt az objektumot lehet megadni (a főbb különbségekről később még lesz szó):</p>
-
-<p><code>javascript
-var termeklista = ['zöld pengető', 'kék pengető', 'húrok', 'erősítő'];
-</code></p>
-
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">termeklista</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zöld pengető&#39;</span><span class="p">,</span> <span class="s1">&#39;kék pengető&#39;</span><span class="p">,</span> <span class="s1">&#39;húrok&#39;</span><span class="p">,</span> <span class="s1">&#39;erősítő&#39;</span><span class="p">];</span>
+</code></pre></div>
 <p><strong>Egy tömb egy eleme bármi lehet, amit egy változó tudna tárolni</strong> (szám, sztring, objektum, függvény, stb.). A fenti példában a tömb összes eleme sztring.</p>
 
-<h2 id="hozzfrs-a-tmb-elemeihez">Hozzáférés a tömb elemeihez</h2>
+<h2>Hozzáférés a tömb elemeihez</h2>
 
 <p>A tömbök olyanok, mint a hagyományos objektumok. Objektumok esetében az tulajdonságokat így szokás elérni: <code>objektum.tulajdonság_neve</code>. Ez viszont csak akkor működik, ha az tulajdonság neve megfelel bizonyos szabályoknak. Az egyik ilyen szabály, hogy a név ne kezdődjön számmal, emiatt a fent létrehozott objektum tulajdonságait nem fogjuk tudni elérni így: <code>termeklista.0</code>, <code>termeklista.1</code>, stb.</p>
 
-<p>Ehelyett az objektumoknál látott másik módszert kell használni: <code>objektum['tulajdonság_neve']</code>. A szögletes zárójelben sztringet kell megadni, mert a tulajdonság neve mindig sztring. Ebből az is következik, hogy a tömb tulajdonságainak nevei valójában sztring típusúak (pl: <code>'0'</code>, <code>'1'</code>, <code>'2'</code>, nem pedig: <code>0</code>, <code>1</code>, <code>2</code>). Ez azért nem gond, mert ha mégis számot adunk meg a szögletes zárójelben, akkor azt a JavaScript automatikusan sztringgé alakítja át, tehát a következő módszer működni fog: <code>termeklista[0]</code>, <code>termeklista[1]</code>, <code>termeklista[2]</code>, stb. (ugyanennek egy kevésbé kényelmes leírása ez: <code>termeklista['0']</code>, <code>termeklista['1']</code>, <code>termeklista['2']</code>).</p>
+<p>Ehelyett az objektumoknál látott másik módszert kell használni: <code>objektum[&#39;tulajdonság_neve&#39;]</code>. A szögletes zárójelben sztringet kell megadni, mert a tulajdonság neve mindig sztring. Ebből az is következik, hogy a tömb tulajdonságainak nevei valójában sztring típusúak (pl: <code>&#39;0&#39;</code>, <code>&#39;1&#39;</code>, <code>&#39;2&#39;</code>, nem pedig: <code>0</code>, <code>1</code>, <code>2</code>). Ez azért nem gond, mert ha mégis számot adunk meg a szögletes zárójelben, akkor azt a JavaScript automatikusan sztringgé alakítja át, tehát a következő módszer működni fog: <code>termeklista[0]</code>, <code>termeklista[1]</code>, <code>termeklista[2]</code>, stb. (ugyanennek egy kevésbé kényelmes leírása ez: <code>termeklista[&#39;0&#39;]</code>, <code>termeklista[&#39;1&#39;]</code>, <code>termeklista[&#39;2&#39;]</code>).</p>
 
 <p>Tehát röviden: <strong>egy tömb <em>n</em>-edik eleméhez úgy férünk hozzá, hogy a tömb referenciája után szögletes zárójelben megadjuk az <em>n</em>-et</strong>. Az <em>n</em> lehet bármilyen kifejezés, aminek a kiértékelése számot eredményez, például:</p>
 
 <ul>
-  <li>egy konkrét szám</li>
-  <li>számot tartalmazó változó</li>
-  <li>bármilyen matematikai kifejezés, ami számot eredményez (pl. <code>1 + 2</code>, <code>3 * a</code>)</li>
+<li>egy konkrét szám</li>
+<li>számot tartalmazó változó</li>
+<li>bármilyen matematikai kifejezés, ami számot eredményez (pl. <code>1 + 2</code>, <code>3 * a</code>)</li>
 </ul>
 
 <p>Az előbb létrehozott terméklista néhány elemét például így lehetne kiiratni, illetve megváltoztatni:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nb">document</span><span class="p">.</span><span class="nx">writeln</span><span class="p">(</span><span class="s1">&#39;A terméklista 3. eleme: &#39;</span><span class="p">);</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">writeln</span><span class="p">(</span><span class="nx">termeklista</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
 
-<p>```javascript
-document.writeln(‘A terméklista 3. eleme: ‘);
-document.writeln(termeklista[2]);</p>
+<span class="nb">document</span><span class="p">.</span><span class="nx">writeln</span><span class="p">(</span><span class="s1">&#39;A terméklista 5. eleme: &#39;</span><span class="p">);</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">writeln</span><span class="p">(</span><span class="nx">termeklista</span><span class="p">[</span><span class="mi">4</span><span class="p">]);</span>
 
-<p>document.writeln(‘A terméklista 5. eleme: ‘);
-document.writeln(termeklista[4]);</p>
-
-<p>// A 4. elem nevét megváltoztatjuk:
-termeklista[3] = ‘zöld erősítő’;
-```</p>
-
+<span class="c1">// A 4. elem nevét megváltoztatjuk:</span>
+<span class="nx">termeklista</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;zöld erősítő&#39;</span><span class="p">;</span>
+</code></pre></div>
 <p><strong>A tömböket mindig 0-tól számozzuk</strong>, ezért van az, hogy a 3. elemre a 2-es sorszámmal, az 5. elemre pedig a 4-es sorszámmal hivatkozunk.</p>
 
-<h2 id="bejrs-for-cikussal-s-a-length-tulajdonsg">Bejárás <code>for</code> cikussal, és a <code>length</code> tulajdonság</h2>
+<h2>Bejárás <code>for</code> cikussal, és a <code>length</code> tulajdonság</h2>
 
 <p>Ha tudjuk a tömb hosszát, akkor akár <code>for</code> cikust is használhatunk a tömb bejárására:</p>
-
-<p><code>javascript
-for (var i = 0; i &lt; 5; i++) {
-  document.writeln('A terméklista ' + i + '. eleme: ');
-  document.writeln(termeklista[i]);
-}
-</code></p>
-
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">writeln</span><span class="p">(</span><span class="s1">&#39;A terméklista &#39;</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="s1">&#39;. eleme: &#39;</span><span class="p">);</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">writeln</span><span class="p">(</span><span class="nx">termeklista</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>A tömbök olyanok, mint a hagyományos objektumok, viszont van néhány plusz tulajdonságuk. A tömb szintaxis használatával valójában mindig a tömb (<code>Array</code>) osztály egy példánya jön létre. Ennek az osztálynak van néhány hasznos tulajdonsága illetve metódusa (ezeket minden egyes tömb példány megkapja). Az egyik ilyen <strong>a <code>length</code> tulajdonság</strong>, ami <strong>megadja, hogy hány eleme van a tömbnek</strong>. Ez akkor hasznos, ha ezt nem tudjuk előre, például egy adatbázisból kapjuk meg, vagy a felhasználó adja meg a tömböt.</p>
 
 <p>A terméklista kiíratása a lista hosszának megadása nélkül:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">termeklista</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">writeln</span><span class="p">(</span><span class="s1">&#39;A terméklista &#39;</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="s1">&#39;. eleme: &#39;</span><span class="p">);</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">writeln</span><span class="p">(</span><span class="nx">termeklista</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2>Elemek hozzáadása, törlése</h2>
 
-<p><code>javascript
-for (var i = 0; i &lt; termeklista.length; i++) {
-  document.writeln('A terméklista ' + i + '. eleme: ');
-  document.writeln(termeklista[i]);
-}
-</code></p>
-
-<h2 id="elemek-hozzadsa-trlse">Elemek hozzáadása, törlése</h2>
-
-<p>A tömböket termszetesen lehet módosítani a létrehozás után is. Erre használhatóak az objektumok tulajdonságainak állítgatására szolgáló módszerek (pl. új termék felvétele: <code>termeklista[5] = 'tremolo kar';</code>, az ötödik termék törlése: <code>delete termeklista[4];</code>). Leggyakrabban a tömb első, illetve utolsó elemén kell műveleteket végezni, erre pedig vannak kényelmesebben használható metódusai is a tömb osztálynak:</p>
+<p>A tömböket termszetesen lehet módosítani a létrehozás után is. Erre használhatóak az objektumok tulajdonságainak állítgatására szolgáló módszerek (pl. új termék felvétele: <code>termeklista[5] = &#39;tremolo kar&#39;;</code>, az ötödik termék törlése: <code>delete termeklista[4];</code>). Leggyakrabban a tömb első, illetve utolsó elemén kell műveleteket végezni, erre pedig vannak kényelmesebben használható metódusai is a tömb osztálynak:</p>
 
 <ul>
-  <li><code>tomb.pop()</code>: törli, és visszaadja a tömb utolsó elemét</li>
-  <li><code>tomb.push(uj_elem)</code>: a tömb végére beszúrja a megadott értéket</li>
-  <li><code>tomb.shift()</code>: törli, és visszaadja a tömb első elemét (a tömb minden eleme 1-el előrébb ‘csúszik’)</li>
-  <li><code>tomb.unshift(uj_elem)</code>: a tömb elejére beszúrja a megadott értéket (a tömb minden eleme 1-el hátrébb ‘csúszik’)</li>
+<li><code>tomb.pop()</code>: törli, és visszaadja a tömb utolsó elemét</li>
+<li><code>tomb.push(uj_elem)</code>: a tömb végére beszúrja a megadott értéket</li>
+<li><code>tomb.shift()</code>: törli, és visszaadja a tömb első elemét (a tömb minden eleme 1-el előrébb &#39;csúszik&#39;)</li>
+<li><code>tomb.unshift(uj_elem)</code>: a tömb elejére beszúrja a megadott értéket (a tömb minden eleme 1-el hátrébb &#39;csúszik&#39;)</li>
 </ul>
 
 <p>A következő példában a megjegyzésekben szerepel a tömb aktuális állapota az egyes műveletek után:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">termeklista</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zöld pengető&#39;</span><span class="p">,</span> <span class="s1">&#39;kék pengető&#39;</span><span class="p">,</span> <span class="s1">&#39;húrok&#39;</span><span class="p">,</span> <span class="s1">&#39;erősítő&#39;</span><span class="p">];</span>
+<span class="c1">// [&#39;zöld pengető&#39;, &#39;kék pengető&#39;, &#39;húrok&#39;, &#39;erősítő&#39;]</span>
 
-<p>```javascript
-var termeklista = [‘zöld pengető’, ‘kék pengető’, ‘húrok’, ‘erősítő’];
-// [‘zöld pengető’, ‘kék pengető’, ‘húrok’, ‘erősítő’]</p>
+<span class="kd">var</span> <span class="nx">utolso_elem</span> <span class="o">=</span> <span class="nx">termeklista</span><span class="p">.</span><span class="nx">pop</span><span class="p">();</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">utolso_elem</span><span class="p">);</span> <span class="c1">// kiírja, hogy &#39;erősítő&#39;</span>
+<span class="c1">// [&#39;zöld pengető&#39;, &#39;kék pengető&#39;, &#39;húrok&#39;]</span>
 
-<p>var utolso_elem = termeklista.pop();
-document.write(utolso_elem); // kiírja, hogy ‘erősítő’
-// [‘zöld pengető’, ‘kék pengető’, ‘húrok’]</p>
+<span class="nx">termeklista</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="s1">&#39;pick-up&#39;</span><span class="p">);</span>
+<span class="c1">// [&#39;zöld pengető&#39;, &#39;kék pengető&#39;, &#39;húrok&#39;, &#39;pick-up&#39;]</span>
 
-<p>termeklista.push(‘pick-up’);
-// [‘zöld pengető’, ‘kék pengető’, ‘húrok’, ‘pick-up’]</p>
+<span class="kd">var</span> <span class="nx">elso_elem</span> <span class="o">=</span> <span class="nx">termeklista</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">utolso_elem</span><span class="p">);</span> <span class="c1">// kiírja, hogy &#39;zöld pengető&#39;</span>
+<span class="c1">// [&#39;kék pengető&#39;, &#39;húrok&#39;, &#39;pick-up&#39;]</span>
 
-<p>var elso_elem = termeklista.shift();
-document.write(utolso_elem); // kiírja, hogy ‘zöld pengető’
-// [‘kék pengető’, ‘húrok’, ‘pick-up’]</p>
-
-<p>termeklista.unshift(‘hangoló’);
-// [‘hangoló’, ‘kék pengető’, ‘húrok’, ‘pick-up’]
-```</p>
-
-<h2 id="egyb-metdusok">Egyéb metódusok</h2>
+<span class="nx">termeklista</span><span class="p">.</span><span class="nx">unshift</span><span class="p">(</span><span class="s1">&#39;hangoló&#39;</span><span class="p">);</span>
+<span class="c1">// [&#39;hangoló&#39;, &#39;kék pengető&#39;, &#39;húrok&#39;, &#39;pick-up&#39;]</span>
+</code></pre></div>
+<h2>Egyéb metódusok</h2>
 
 <p>A tömb osztálynak sok hasznos metódusa van, amiket itt nincs hely bemutatni:</p>
 
 <ul>
-  <li>másolás: <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/slice">slice</a></li>
-  <li>összefűzés: <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/concat">concat</a></li>
-  <li>átrendezés, törlés: <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/splice">splice</a>, <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/reverse">reverse</a>, <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort">sort</a></li>
-  <li>elemek szűrése, helyettesítése: <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/map">map</a>, <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/filter">filter</a></li>
-  <li>sztring létrehozása az elemekből: <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/join">join</a></li>
+<li>másolás: <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/slice">slice</a></li>
+<li>összefűzés: <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/concat">concat</a></li>
+<li>átrendezés, törlés: <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/splice">splice</a>, <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/reverse">reverse</a>, <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort">sort</a></li>
+<li>elemek szűrése, helyettesítése: <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/map">map</a>, <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/filter">filter</a></li>
+<li>sztring létrehozása az elemekből: <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/join">join</a></li>
 </ul>
 
 
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -96,12 +97,12 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
 
-				<p>It’s just a quick post to say hello to everybody who plans to follow my Google Summer of Code project,
+				<p>It&#39;s just a quick post to say hello to everybody who plans to follow my Google Summer of Code project,
 which is about implementing a HTTP/2 prototype server in node.js. I will blog about it weekly to keep
 you informed.</p>
 
 <p>The information page of the project on the GSoC2013 website is <a href="https://google-melange.appspot.com/gsoc/project/google/gsoc2013/molnarg/5001">this</a>. I will be happy
-to email you the full proposal if you are interested, but I don’t want to share it publicly since
+to email you the full proposal if you are interested, but I don&#39;t want to share it publicly since
 it contains personal information.</p>
 
 <p>The project is <a href="https://github.com/molnarg/node-http2">hosted on GitHub</a>, and will be available as an <a href="https://npmjs.org/package/http2">npm module</a>.</p>
@@ -109,8 +110,19 @@ it contains personal information.</p>
 <p>The Atom feed of my GSoC related blog posts is <a href="http://gabor.molnar.es/blog/categories/google-summer-of-code/atom.xml">this</a>.</p>
 
 
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

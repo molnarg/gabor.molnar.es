@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -104,15 +105,26 @@
 
 <p>It all began with a <a href="https://github.com/molnarg/node-http2/issues/47">GitHub issue</a> opened by <a href="https://twitter.com/tatsuhiro_t">Tatsuhiro Tsujikawa</a> (creator of <a href="https://github.com/tatsuhiro-t/spdylay">spdylay</a> and <a href="https://github.com/tatsuhiro-t/nghttp2">nghttp2</a>). It took lot of time to fix it, but then I was so deep into this performance optimization thing that I continued with other improvements. The optimizations were all based on CPU profiling data collected using <a href="https://github.com/c4milo/node-webkit-agent">node-webkit-agent</a>.</p>
 
-<p>The result is that it now takes 2 seconds to serve 600 small parallel request from the same client, while it took so long before that I could not even wait for it to complete. It’s great improvement, but I still plan to further optimize this, since there’s still room for improvements. I also plan to post about the lessons learned during the process sometime next week.</p>
+<p>The result is that it now takes 2 seconds to serve 600 small parallel request from the same client, while it took so long before that I could not even wait for it to complete. It&#39;s great improvement, but I still plan to further optimize this, since there&#39;s still room for improvements. I also plan to post about the lessons learned during the process sometime next week.</p>
 
-<p>Other than that, I started <a href="https://github.com/molnarg/http2-testpage">http2-testpage</a>. It’s a tool that injects intentional failures into HTTP/2 connections to test clients’ reaction. The next week will be dedicated to working on this.</p>
+<p>Other than that, I started <a href="https://github.com/molnarg/http2-testpage">http2-testpage</a>. It&#39;s a tool that injects intentional failures into HTTP/2 connections to test clients&#39; reaction. The next week will be dedicated to working on this.</p>
 
 <p>As usual, the latest code is published on npm (<code>npm install http2</code> and <code>npm install http2-testpage</code>). The <a href="http://molnarg.github.io/node-http2/doc/">hosted version of the docs</a> and the <a href="https://gabor.molnar.es:8080">prototype public server</a> was updated as well.</p>
 
 
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

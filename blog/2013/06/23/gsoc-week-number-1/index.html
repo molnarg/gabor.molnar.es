@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -113,17 +114,28 @@
 <p>Tasks for the next week:</p>
 
 <ul>
-  <li>handling errors in the framer (probably emitting error events so that upper layers can get notified)</li>
-  <li>syncing with the latest version of the spec (new and removed frame types, etc.)</li>
-  <li>writing the compressor (that handles header compression/decompression)</li>
-  <li>connection management code if I get to it</li>
+<li>handling errors in the framer (probably emitting error events so that upper layers can get notified)</li>
+<li>syncing with the latest version of the spec (new and removed frame types, etc.)</li>
+<li>writing the compressor (that handles header compression/decompression)</li>
+<li>connection management code if I get to it</li>
 </ul>
 
-<p>I would be glad to receive feedback so that I can improve the code. Feel free to open issues in the <a href="https://github.com/molnarg/node-http2/issues">issue tracker</a>, or just <a href="&#109;&#097;&#105;&#108;&#116;&#111;:&#103;&#097;&#098;&#111;&#114;&#064;&#109;&#111;&#108;&#110;&#097;&#114;&#046;&#101;&#115;">email me</a> directly. If you want to get notified when I post status updates in the future, you can subscribe to the <a href="http://gabor.molnar.es/blog/categories/google-summer-of-code/atom.xml">GSoC category feed</a> of this blog.</p>
+<p>I would be glad to receive feedback so that I can improve the code. Feel free to open issues in the <a href="https://github.com/molnarg/node-http2/issues">issue tracker</a>, or just <a href="mailto:gabor@molnar.es">email me</a> directly. If you want to get notified when I post status updates in the future, you can subscribe to the <a href="http://gabor.molnar.es/blog/categories/google-summer-of-code/atom.xml">GSoC category feed</a> of this blog.</p>
 
 
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

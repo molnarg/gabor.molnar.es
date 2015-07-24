@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -101,8 +102,8 @@
 <p>A JavaScript segítségével könnyen interaktívvá tehető egy weboldal. Ehhez két nagyon fontos eszközünk is van:</p>
 
 <ul>
-  <li>lehetséges a felhasználó tevékenységeire reagálni (egérkattintás, szöveg beírása, stb)</li>
-  <li>meg lehet változtatni a weboldal tartalmát a betöltődés után</li>
+<li>lehetséges a felhasználó tevékenységeire reagálni (egérkattintás, szöveg beírása, stb)</li>
+<li>meg lehet változtatni a weboldal tartalmát a betöltődés után</li>
 </ul>
 
 <p>Ez a két dolog már elég ahhoz, hogy egyszerű webalkalmazásokat készítsünk.</p>
@@ -111,40 +112,43 @@
 
 <!-- more -->
 
-<h2 id="document-object-model">Document Object Model</h2>
+<h2>Document Object Model</h2>
 
 <p><strong>A böngésző</strong> a HTML fájl beolvasásakor sorról sorra halad, és <strong>a beolvasott HTML tag-ekből objektumokat hoz létre</strong>. Ezeket az objektumokat <strong>element</strong>-eknek, <strong>elem</strong>eknek vagy <strong>node</strong>-oknak nevezzük, és JavaScript-ből is elérhetőek. Az element objektumoknak olyan metódusai, és tulajdonságai vannak, amiket felhasználva lehetséges az adott element adatait (pl. hol helyezkedik el a képernyőn, stílus adatok, stb.) kiolvasni és módosítani.</p>
 
-<p>Mivel a HTML-ben az egyes tag-eknek lehetnek “gyerekei”, ezért a létrejövő objektumhalmaz is hierarchikusan épül fel. A hierarchia legfelső szintjén a <code>document</code> objektum van, ennek a gyereke a <code>&lt;html&gt;</code> tag-nek megfelelő element, ennek pedig a <code>&lt;head&gt;</code> és <code>&lt;body&gt;</code> tag-eknek megfelelő objektumok, stb.</p>
+<p>Mivel a HTML-ben az egyes tag-eknek lehetnek &quot;gyerekei&quot;, ezért a létrejövő objektumhalmaz is hierarchikusan épül fel. A hierarchia legfelső szintjén a <code>document</code> objektum van, ennek a gyereke a <code>&lt;html&gt;</code> tag-nek megfelelő element, ennek pedig a <code>&lt;head&gt;</code> és <code>&lt;body&gt;</code> tag-eknek megfelelő objektumok, stb.</p>
 
 <p><strong>Ezt a hierarchikus szerkezetet nevezzük Document Object Model (DOM) fának.</strong></p>
 
 <p>Két jellemző tulajdonság, amivel minden element rendelkezik:</p>
 
 <ul>
-  <li><code>nodeName</code>: az adott element típusát tároló sztring (legtöbbször a tag neve csupa nagybetűvel, pl. <code>"HEAD"</code>, <code>"BODY"</code>, <code>"P"</code>)</li>
-  <li><code>childNodes</code>: az adott element “gyerekeit” tároló tömb, aminek elemei szintén element-ek</li>
+<li><code>nodeName</code>: az adott element típusát tároló sztring (legtöbbször a tag neve csupa nagybetűvel, pl. <code>&quot;HEAD&quot;</code>, <code>&quot;BODY&quot;</code>, <code>&quot;P&quot;</code>)</li>
+<li><code>childNodes</code>: az adott element &quot;gyerekeit&quot; tároló tömb, aminek elemei szintén element-ek</li>
 </ul>
 
 <p>Ezen kívül nagyon sok más tulajdonsággal rendelkezik minden element, de ezekkel egyelőre nem foglalkozunk.</p>
 
-<h2 id="dom-plda">DOM példa</h2>
+<h2>DOM példa</h2>
 
 <p>Egy rövid példán keresztül mutatom be, hogy egy HTML kódból milyen DOM fa jön létre. A példában az elementeknél csak a <code>nodeName</code> és a <code>childNodes</code> tulajdonságot írtam le, a többit kihagytam. A bal oldalon a HTML, a jobb oldalon a belőle létrejövő (egyszerűsített) DOM fa látható:</p>
 
 <div style="float: left; width: 48%">
 ```html
-&lt;!DOCTYPE html&gt;
+<!DOCTYPE html>
 <html>
   <head>
   </head>
   <body>
-    <div id="negyzet" style="width: 100px;
+    <div id="negyzet"
+         style="width: 100px;
                 height: 100px;
-                background-color: black;"></div>
+                background-color: black;"
+    ></div>
   <body>
-
+</html>
 ```
+</div>
 
 <div style="float: right; width: 48%">
 ```javascript
@@ -167,137 +171,139 @@ var document = {
 };
 ```
 </div>
+
 <div style="clear: both"></div>
 
-A fenti HTML kód egy fekete színű négyzetet jelenít meg, aminek az `id` attribútuma `negyzet`:
+<p>A fenti HTML kód egy fekete színű négyzetet jelenít meg, aminek az <code>id</code> attribútuma <code>negyzet</code>:</p>
 
-<div id="negyzet" style="width: 100px;
+<div id="negyzet"
+     style="width: 100px;
             height: 100px;
-            background-color: black;"></div>
+            background-color: black;"
+></div>
+
 <p></p>
 
-Most változtassuk meg a négyzet színét! A lenti kódrészletet akár a konzolban (CTRL+SHIFT+J) is ki lehet próbálni ezen az oldalon:
+<p>Most változtassuk meg a négyzet színét! A lenti kódrészletet akár a konzolban (CTRL+SHIFT+J) is ki lehet próbálni ezen az oldalon:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">negyzet_element</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;negyzet&#39;</span><span class="p">);</span> <span class="c1">// A &quot;négyzet&quot; element lekérdezése id alapján</span>
+<span class="nx">negyzet_element</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">backgroundColor</span> <span class="o">=</span> <span class="s1">&#39;green&#39;</span><span class="p">;</span>          <span class="c1">// Háttérszín beállítása</span>
+</code></pre></div>
+<h2>A jQuery függvénykönyvtár</h2>
 
-```javascript
-var negyzet_element = document.getElementById('negyzet'); // A "négyzet" element lekérdezése id alapján
-negyzet_element.style.backgroundColor = 'green';          // Háttérszín beállítása
-```
+<p>Az előző kódrészletet nem magyaráztam el részletesen, mert olyan DOM függvényeket, tulajdonságokat használtunk, amikre később nem lesz szükségünk. A DOM-ról általánosságban elmondható, hogy elég bonyolult használni, és mindenre speciális függvények, objektum tulajdonságok vannak, amiket mindig a dokumentációban kell megnézni, mert nehezen megjegyezhetők.</p>
 
-A jQuery függvénykönyvtár
--------------------------
+<p>Ehelyett a <strong>jQuery</strong> függvénykönyvtárat fogjuk használni, ami megoldja helyettünk a DOM kezelését, és <strong>egyszerűen használható, ha értünk a CSS-hez</strong>. A DOM bevezetésre azért volt szükség, hogy lássuk, a jQuery nem varázslat, hanem olyan dolgokat könnyít meg, amit mi is meg tudnánk csinálni, csak körülményesen.</p>
 
-Az előző kódrészletet nem magyaráztam el részletesen, mert olyan DOM függvényeket, tulajdonságokat használtunk, amikre később nem lesz szükségünk. A DOM-ról általánosságban elmondható, hogy elég bonyolult használni, és mindenre speciális függvények, objektum tulajdonságok vannak, amiket mindig a dokumentációban kell megnézni, mert nehezen megjegyezhetők.
+<p>A jQuery-t könnyen be lehet tölteni egy szkript tag segítségével:</p>
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;http://code.jquery.com/jquery-1.9.1.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</code></pre></div>
+<p>A betöltött szkript egyetlen függvény típusú globális változót hoz létre, aminek a neve <code>$</code> (dollárjel).</p>
 
-Ehelyett a **jQuery** függvénykönyvtárat fogjuk használni, ami megoldja helyettünk a DOM kezelését, és **egyszerűen használható, ha értünk a CSS-hez**. A DOM bevezetésre azért volt szükség, hogy lássuk, a jQuery nem varázslat, hanem olyan dolgokat könnyít meg, amit mi is meg tudnánk csinálni, csak körülményesen.
+<h2>Elementek kiválasztása</h2>
 
-A jQuery-t könnyen be lehet tölteni egy szkript tag segítségével:
+<p>A jQuery-nél egy-egy művelet elvégzése (pl. a négyzet színét változtassuk meg zöldre) mindig két részre osztható:</p>
 
-```html
-<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-```
+<ol>
+<li><strong>kiválasztjuk</strong> azokat <strong>az elementeket</strong>, amiken a módosítást el akarjuk végezni (pl. a &quot;negyzet&quot; id-vel rendelkező element)</li>
+<li>a kiválasztott elementeken valamilyen metódus segítségével <strong>elvégezzük a módosítást</strong> (pl. a kiválasztott elementek színét megváltoztatjuk zöldre)</li>
+</ol>
 
-A betöltött szkript egyetlen függvény típusú globális változót hoz létre, aminek a neve `$` (dollárjel).
+<p>Elementeket kiválasztani <a href="http://patrik.what.hu/web/css.html#chapter2">CSS szelektor kifejezések</a> segítségével lehet. Emlékeztetőül néhány egyszerű CSS szelektor kifejezés:</p>
 
-Elementek kiválasztása
-----------------------
+<ul>
+<li><code>#azonosito</code>: azt az egy elementet választja ki, aminek az <code>id</code> attribútuma <code>azonosito</code></li>
+<li><code>.osztaly</code>: azokat az elementeket választja ki, amiknek a <code>class</code> attribútumában szerepel az <code>osztaly</code> (a class attribútumban szóközzel elválasztva több különböző osztálynév is szerepelhet)</li>
+<li><code>div</code>: kiválasztja az összes div típusú element-et</li>
+</ul>
 
-A jQuery-nél egy-egy művelet elvégzése (pl. a négyzet színét változtassuk meg zöldre) mindig két részre osztható:
+<p>Ha megvan a szelektor kifejezés, akkor ezt sztringként kell átadni a <code>$</code> függvénynek, az pedig visszaad egy objektumot (nevezzük ezt <em>jQuery objektumnak</em>), ami a kiválasztott elementeket tartalmazza. Később ezen az objektumon keresztül lehet majd a különféle műveleteket elvégezni.</p>
 
-1. **kiválasztjuk** azokat **az elementeket**, amiken a módosítást el akarjuk végezni (pl. a "negyzet" id-vel rendelkező element)
-2. a kiválasztott elementeken valamilyen metódus segítségével **elvégezzük a módosítást** (pl. a kiválasztott elementek színét megváltoztatjuk zöldre)
+<p>Néhány példa kiválasztásra:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">negyzet</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#negyzet&#39;</span><span class="p">);</span>  <span class="c1">// a &quot;negyzet&quot; id-vel rendelkező element</span>
+<span class="kd">var</span> <span class="nx">kodsorok</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.line&#39;</span><span class="p">);</span>    <span class="c1">// a &quot;line&quot; class-ba tartozó elementek</span>
+<span class="kd">var</span> <span class="nx">bekezdesek</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;p&#39;</span><span class="p">);</span>      <span class="c1">// az összes &quot;p&quot; típusú element (vagyis a bekezdések)</span>
+</code></pre></div>
+<h2>CSS tulajdonságok módosítása</h2>
 
-Elementeket kiválasztani [CSS szelektor kifejezések](http://patrik.what.hu/web/css.html#chapter2) segítségével lehet. Emlékeztetőül néhány egyszerű CSS szelektor kifejezés:
+<p>Ha megvan a kiválasztás, a visszakapott jQuery objektumon a <code>.css(nev, ertek)</code> metódust meghívva állíthatunk be stílus tulajdonságokat. Ahogy stíluslapok szerkesztésekor, itt is a stílus szabály nevét, és a hozzá tartozó értéket kell megadni.</p>
 
-* `#azonosito`: azt az egy elementet választja ki, aminek az `id` attribútuma `azonosito`
-* `.osztaly`: azokat az elementeket választja ki, amiknek a `class` attribútumában szerepel az `osztaly` (a class attribútumban szóközzel elválasztva több különböző osztálynév is szerepelhet)
-* `div`: kiválasztja az összes div típusú element-et
+<p>A négyzet háttérszínét tehát így lehet átállítani (a konzolban ki lehet próbálni ezen az oldalon, a fenti négyzet színét fogja átállítani!):</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">negyzet</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#negyzet&#39;</span><span class="p">);</span>            <span class="c1">// a &quot;negyzet&quot; id-vel rendelkező element kiválasztása</span>
+<span class="nx">negyzet</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span><span class="s1">&#39;background-color&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">);</span> <span class="c1">// a kiválasztott element(ek) háttérszínének átállítása vörösre</span>
+</code></pre></div>
+<p>Azt nem kell tudnunk előre, hogy a kiválasztás hány elementet ad vissza. Ha a kiválasztásban egyszerre több element szerepel, akkor egyszerre mindegyiken végzünk műveleteket, ha pedig nem szerepel egy element sem, akkor nem történik semmi.</p>
 
-Ha megvan a szelektor kifejezés, akkor ezt sztringként kell átadni a `$` függvénynek, az pedig visszaad egy objektumot (nevezzük ezt *jQuery objektumnak*), ami a kiválasztott elementeket tartalmazza. Később ezen az objektumon keresztül lehet majd a különféle műveleteket elvégezni.
+<p>A következő két példa közül az első az összes bekezdés betűszínét megváltoztatja, a második viszont nem csinál semmit, mert nincs olyan element, amire illeszkedne a megadott kiválasztó kifejezés:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">bekezdesek</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;p&#39;</span><span class="p">);</span>          <span class="c1">// a &quot;p&quot; típusú element(ek) kiválasztása</span>
+<span class="nx">bekezdesek</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">);</span>  <span class="c1">// a kiválasztott element(ek) betűszínének átállítása kékre</span>
 
-Néhány példa kiválasztásra:
+<span class="kd">var</span> <span class="nx">ures_kivalasztas</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;.nemletezo&#39;</span><span class="p">);</span> <span class="c1">// a &quot;nemletezo&quot; osztályú element(ek) kiválasztása</span>
+<span class="nx">ures_kivalasztas</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">);</span>  <span class="c1">// a kiválasztott element(ek) betűszínének átállítása kékre</span>
+</code></pre></div>
+<h2>Események</h2>
 
-```javascript
-var negyzet = $('#negyzet');  // a "negyzet" id-vel rendelkező element
-var kodsorok = $('.line');    // a "line" class-ba tartozó elementek
-var bekezdesek = $('p');      // az összes "p" típusú element (vagyis a bekezdések)
-```
+<p>A böngésző a weboldal felhasználójának legtöbb tevékenységét (kattintás, szöveg beírása, stb.) eseményként kezeli. Egy eseményhez mindig hozzá tartozik két fontos tulajdonság (de ezen felül lehet több adata is):</p>
 
-CSS tulajdonságok módosítása
-----------------------------
+<ul>
+<li>az esemény típusa (pl. kattintás)</li>
+<li>az az element, amin az esemény keletkezik (pl. az az element, amire a felhasználó rákattintott)</li>
+</ul>
 
-Ha megvan a kiválasztás, a visszakapott jQuery objektumon a `.css(nev, ertek)` metódust meghívva állíthatunk be stílus tulajdonságokat. Ahogy stíluslapok szerkesztésekor, itt is a stílus szabály nevét, és a hozzá tartozó értéket kell megadni.
+<p>Az <strong>eseményekre fel lehet iratkozni</strong>, ami úgy zajlik, hogy <strong>megadunk egy függvényt, ami meghívódik, ha az esemény bekövetkezik</strong>. A feliratkozásnál mindig meg kell adni, hogy melyik element milyen típusú eseményeire iratkozunk fel.</p>
 
-A négyzet háttérszínét tehát így lehet átállítani (a konzolban ki lehet próbálni ezen az oldalon, a fenti négyzet színét fogja átállítani!):
+<p>A jQuery-ben az <code>.on(esemeny_tipusa, esemenykezelo_fv)</code> metódus használható feliratkozásra, amit azon a jQuery objektumon kell meghívni, amelyiken a várt esemény be fog következni. A két argumentum jelentése:</p>
 
-```javascript
-var negyzet = $('#negyzet');            // a "negyzet" id-vel rendelkező element kiválasztása
-negyzet.css('background-color', 'red'); // a kiválasztott element(ek) háttérszínének átállítása vörösre
-```
+<ul>
+<li><code>esemeny_tipusa</code>: sztring típusú argumentum, ami az esemény típusát adja meg (pl. &#39;click&#39;)</li>
+<li><code>esemenykezelo_fv</code>: függvény típusú argumentum, ami meg fog hívódni az esemény hatására</li>
+</ul>
 
-Azt nem kell tudnunk előre, hogy a kiválasztás hány elementet ad vissza. Ha a kiválasztásban egyszerre több element szerepel, akkor egyszerre mindegyiken végzünk műveleteket, ha pedig nem szerepel egy element sem, akkor nem történik semmi.
+<p>Példa a használatára:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">negyzet</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#negyzet&#39;</span><span class="p">);</span>
+<span class="nx">negyzet</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">negyzet</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span><span class="s1">&#39;background-color&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">negyzet</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span><span class="s1">&#39;background-color&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>A példát érdemes a konzolban kipróbálni. Ez után a fenti négyzet kattintás hatására véletlenszerűen vörös vagy zöld színű lesz.</p>
 
-A következő két példa közül az első az összes bekezdés betűszínét megváltoztatja, a második viszont nem csinál semmit, mert nincs olyan element, amire illeszkedne a megadott kiválasztó kifejezés:
+<h2>További események, metódusok</h2>
 
-```javascript
-var bekezdesek = $('p');          // a "p" típusú element(ek) kiválasztása
-bekezdesek.css('color', 'blue');  // a kiválasztott element(ek) betűszínének átállítása kékre
+<p>Néhány további gyakran használt esemény típus:</p>
 
-var ures_kivalasztas = $('.nemletezo'); // a "nemletezo" osztályú element(ek) kiválasztása
-ures_kivalasztas.css('color', 'blue');  // a kiválasztott element(ek) betűszínének átállítása kékre
-```
+<ul>
+<li><code>mouseenter</code>: az egérkurzor a kiválasztott element felé kerül</li>
+<li><code>mouseleave</code>: az egérkurzor a kiválasztott element területét elhagyja</li>
+<li><code>dblclick</code>: dupla kattintás</li>
+<li><code>change</code>: beviteli mezőkön (<code>&lt;input&gt;</code>) jön létre, ha megváltozik a mező tartalma</li>
+</ul>
 
-Események
----------
+<p>Egyéb hasznos metódusok jQuery objektumokon egyszerű alkalmazások készítéséhez:</p>
 
-A böngésző a weboldal felhasználójának legtöbb tevékenységét (kattintás, szöveg beírása, stb.) eseményként kezeli. Egy eseményhez mindig hozzá tartozik két fontos tulajdonság (de ezen felül lehet több adata is):
-
-* az esemény típusa (pl. kattintás)
-* az az element, amin az esemény keletkezik (pl. az az element, amire a felhasználó rákattintott)
-
-Az **eseményekre fel lehet iratkozni**, ami úgy zajlik, hogy **megadunk egy függvényt, ami meghívódik, ha az esemény bekövetkezik**. A feliratkozásnál mindig meg kell adni, hogy melyik element milyen típusú eseményeire iratkozunk fel.
-
-A jQuery-ben az `.on(esemeny_tipusa, esemenykezelo_fv)` metódus használható feliratkozásra, amit azon a jQuery objektumon kell meghívni, amelyiken a várt esemény be fog következni. A két argumentum jelentése:
-
-* `esemeny_tipusa`: sztring típusú argumentum, ami az esemény típusát adja meg (pl. 'click')
-* `esemenykezelo_fv`: függvény típusú argumentum, ami meg fog hívódni az esemény hatására
-
-Példa a használatára:
-
-```javascript
-var negyzet = $('#negyzet');
-negyzet.on('click', function() {
-  if (Math.random() &lt; 0.5) {
-    negyzet.css('background-color', 'green');
-  } else {
-    negyzet.css('background-color', 'red');
-  }
-});
-```
-
-A példát érdemes a konzolban kipróbálni. Ez után a fenti négyzet kattintás hatására véletlenszerűen vörös vagy zöld színű lesz.
-
-További események, metódusok
-----------------------------
-
-Néhány további gyakran használt esemény típus:
-
-* `mouseenter`: az egérkurzor a kiválasztott element felé kerül
-* `mouseleave`: az egérkurzor a kiválasztott element területét elhagyja
-* `dblclick`: dupla kattintás
-* `change`: beviteli mezőkön (`<input />`) jön létre, ha megváltozik a mező tartalma
-
-Egyéb hasznos metódusok jQuery objektumokon egyszerű alkalmazások készítéséhez:
-
-* `.val(ertek)`: beviteli mezők (`<input />`) tartalmának beállítása vagy kiolvasása (ha meg van adva az `ertek` argumentum, akkor beállít, egyébként kiolvas; [dokumentáció](http://api.jquery.com/val/))
-* `.attr(nev, ertek)`: egy HTML attribútum lekérdezése, vagy beállítása (ha meg van adva az `ertek` argumentum, akkor beállít, egyébként kiolvas; [dokumentáció](http://api.jquery.com/attr/))
-* `.hide()`: a kiválasztott elementek elrejtése ([dokumentáció](http://api.jquery.com/hide/))
-* `.show()`: a kiválasztott elementek mutatása, ha el voltak rejtve ([dokumentáció](http://api.jquery.com/show/))
+<ul>
+<li><code>.val(ertek)</code>: beviteli mezők (<code>&lt;input&gt;</code>) tartalmának beállítása vagy kiolvasása (ha meg van adva az <code>ertek</code> argumentum, akkor beállít, egyébként kiolvas; <a href="http://api.jquery.com/val/">dokumentáció</a>)</li>
+<li><code>.attr(nev, ertek)</code>: egy HTML attribútum lekérdezése, vagy beállítása (ha meg van adva az <code>ertek</code> argumentum, akkor beállít, egyébként kiolvas; <a href="http://api.jquery.com/attr/">dokumentáció</a>)</li>
+<li><code>.hide()</code>: a kiválasztott elementek elrejtése (<a href="http://api.jquery.com/hide/">dokumentáció</a>)</li>
+<li><code>.show()</code>: a kiválasztott elementek mutatása, ha el voltak rejtve (<a href="http://api.jquery.com/show/">dokumentáció</a>)</li>
+</ul>
 
 
-</body></body></html></div>
-
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

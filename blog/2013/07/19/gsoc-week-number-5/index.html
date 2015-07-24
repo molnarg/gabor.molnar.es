@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -100,65 +101,61 @@
 
 <!-- more -->
 
-<p>This week was about achieving an important milestone: making the first successful HTTP/2 request with node-http2! I am quite happy that I managed to achieve it before going to holiday next week. Please note that it does not mean support for the <a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-04#section-3.2">HTTP/1 upgrade process</a> or <a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-04#section-3.3">ALPN negotiation</a>. It’s <a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-04#section-3.4">raw HTTP/2 without any negotiation</a>.</p>
+<p>This week was about achieving an important milestone: making the first successful HTTP/2 request with node-http2! I am quite happy that I managed to achieve it before going to holiday next week. Please note that it does not mean support for the <a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-04#section-3.2">HTTP/1 upgrade process</a> or <a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-04#section-3.3">ALPN negotiation</a>. It&#39;s <a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-04#section-3.4">raw HTTP/2 without any negotiation</a>.</p>
 
 <p>Before showing a quick demo, a little bit more info about other things I did this week. First of all, it is now possible to measure test coverage of the node-http2 codebase. It is made possible by a great code coverage tool called <a href="https://github.com/gotwarlost/istanbul">istanbul</a>. It is this easy:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>npm <span class="nb">test</span> --coverage
 
-<p>```bash
-$ npm test –coverage</p>
+...
 
-<p>…</p>
-
-<p>=============================== Coverage summary ===============================
-Statements   : 91.18% ( 775/850 )
-Branches     : 84.69% ( 249/294 )
-Functions    : 88.03% ( 103/117 )
-Lines        : 91.18% ( 775/850 )
-================================================================================
-```</p>
-
-<p>It also generates a detailed, line-by-line analysis, that you can have a look at <a href="http://molnarg.github.io/node-http2/coverage/lcov-report/lib/">here</a>. Using this, I managed to achieve 100% test coverage for the compression code, and in the process, I fixed several bugs that were discovered while writing the new test cases. I know that this does not mean that the compression code is now free of bugs, but still, it’s more reliable than before.</p>
+<span class="o">===============================</span> Coverage <span class="nv">summary</span> <span class="o">===============================</span>
+Statements   : 91.18% <span class="o">(</span> 775/850 <span class="o">)</span>
+Branches     : 84.69% <span class="o">(</span> 249/294 <span class="o">)</span>
+Functions    : 88.03% <span class="o">(</span> 103/117 <span class="o">)</span>
+Lines        : 91.18% <span class="o">(</span> 775/850 <span class="o">)</span>
+<span class="o">================================================================================</span>
+</code></pre></div>
+<p>It also generates a detailed, line-by-line analysis, that you can have a look at <a href="http://molnarg.github.io/node-http2/coverage/lcov-report/lib/">here</a>. Using this, I managed to achieve 100% test coverage for the compression code, and in the process, I fixed several bugs that were discovered while writing the new test cases. I know that this does not mean that the compression code is now free of bugs, but still, it&#39;s more reliable than before.</p>
 
 <p>To make a HTTP/2 request for yourself using node-http2, follow these steps.</p>
 
 <p>Clone node-http2 and install the development dependencies.</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>git clone https://github.com/molnarg/node-http2.git
 
-<p>```bash
-$ git clone https://github.com/molnarg/node-http2.git</p>
+<span class="nv">$ </span><span class="nb">cd </span>node-http2
 
-<p>$ cd node-http2</p>
-
-<p>$ npm install
-```</p>
-
+<span class="nv">$ </span>npm install
+</code></pre></div>
 <p>Start the server in one shell (use the HTTP2_PORT environment variable to change the port):</p>
-
-<p><code>bash
-$ node ./example/server.js
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>node ./example/server.js
 Listening on localhost:8080, serving up files from ./example
-</code></p>
-
+</code></pre></div>
 <p>Finally, use the client in an other shell to download the source code of the server:</p>
-
-<p><code>bash
-$ node ./example/client.js 'http://localhost:8080/server.js' 2&gt;/tmp/server.js
-</code></p>
-
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>node ./example/client.js <span class="s1">&#39;http://localhost:8080/server.js&#39;</span> 2&gt;/tmp/server.js
+</code></pre></div>
 <p>To see the nice colored log output, try these (or use <code>bunyan --no-color</code> if your terminal does not play nice with bunyan):</p>
-
-<p><code>bash
-$ sudo npm install -g bunyan # To be able to use the bunyan command line tool to format the logs
-$ HTTP2_LOG=debug node ./example/server.js | bunyan -o short
-$ HTTP2_LOG=debug node ./example/client.js 'http://localhost:8080/server.js' 2&gt;/tmp/server.js | bunyan -o short
-</code></p>
-
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>sudo npm install -g bunyan <span class="c"># To be able to use the bunyan command line tool to format the logs</span>
+<span class="nv">$ HTTP2_LOG</span><span class="o">=</span>debug node ./example/server.js <span class="p">|</span> bunyan -o short
+<span class="nv">$ HTTP2_LOG</span><span class="o">=</span>debug node ./example/client.js <span class="s1">&#39;http://localhost:8080/server.js&#39;</span> 2&gt;/tmp/server.js <span class="p">|</span> bunyan -o short
+</code></pre></div>
 <p>The week after I come back, the plan is to implement a public API, sort out the handling of PUSH_PROMISE, and to write more documentation and test cases. I also plan to run a public server with publicly available debug logs to make it easy for client implementors to test with node-http2.</p>
 
-<p>As usual, the latest code is published on npm (just type <code>npm install http2</code> to install it), and the <a href="http://molnarg.github.io/node-http2/doc/">hosted version of the docs</a> was updated as well. Feel free to open issues in the <a href="https://github.com/molnarg/node-http2/issues">issue tracker</a> or just <a href="&#109;&#097;&#105;&#108;&#116;&#111;:&#103;&#097;&#098;&#111;&#114;&#064;&#109;&#111;&#108;&#110;&#097;&#114;&#046;&#101;&#115;">email me</a> directly if you find any problem.</p>
+<p>As usual, the latest code is published on npm (just type <code>npm install http2</code> to install it), and the <a href="http://molnarg.github.io/node-http2/doc/">hosted version of the docs</a> was updated as well. Feel free to open issues in the <a href="https://github.com/molnarg/node-http2/issues">issue tracker</a> or just <a href="mailto:gabor@molnar.es">email me</a> directly if you find any problem.</p>
 
 
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

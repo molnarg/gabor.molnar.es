@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -105,8 +106,8 @@
 <p>The framer is now updated to the latest revision of the HTTP/2 spec, and the error handling is finalized as well. The error handling policy is as follows:</p>
 
 <ul>
-  <li>when bad frame comes from the layers above, throw exceptions because that’s probably a bug</li>
-  <li>when bad frame comes from the network, emit an error event that gets propagated to the layer above that can handle it</li>
+<li>when bad frame comes from the layers above, throw exceptions because that&#39;s probably a bug</li>
+<li>when bad frame comes from the network, emit an error event that gets propagated to the layer above that can handle it</li>
 </ul>
 
 <p>The main focus for this week was on compression. This is basically a layer between the framer and the connection handler component. (See <a href="https://github.com/http2/wg_materials/raw/master/interim-13-06/editor-notes.pdf">this great slide deck</a> from Mark Nottingham for the overview of the layering in HTTP/2)</p>
@@ -115,13 +116,24 @@
 
 <p>The implementation is in a very good shape, but it is not yet ready. Serialization and deserialization are both working and tested, but the more complicated stuff largely remains for this week.</p>
 
-<p>In the process of implementing the spec, I discovered a few problems in the text and reported them either via <a href="https://github.com/http2/compression-spec/issues/8">email</a> or with filing <a href="https://github.com/http2/compression-spec/issues/7">GitHub</a> <a href="https://github.com/http2/compression-spec/issues/6">tickets</a>. I’m quite happy that I could provide useful feedback on the spec! :)</p>
+<p>In the process of implementing the spec, I discovered a few problems in the text and reported them either via <a href="https://github.com/http2/compression-spec/issues/8">email</a> or with filing <a href="https://github.com/http2/compression-spec/issues/7">GitHub</a> <a href="https://github.com/http2/compression-spec/issues/6">tickets</a>. I&#39;m quite happy that I could provide useful feedback on the spec! :)</p>
 
-<p>As always, I would be glad to receive feedback to further improve the code! Feel free to open issues in the <a href="https://github.com/molnarg/node-http2/issues">issue tracker</a>, or just <a href="&#109;&#097;&#105;&#108;&#116;&#111;:&#103;&#097;&#098;&#111;&#114;&#064;&#109;&#111;&#108;&#110;&#097;&#114;&#046;&#101;&#115;">email me</a> directly.</p>
+<p>As always, I would be glad to receive feedback to further improve the code! Feel free to open issues in the <a href="https://github.com/molnarg/node-http2/issues">issue tracker</a>, or just <a href="mailto:gabor@molnar.es">email me</a> directly.</p>
 
 
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

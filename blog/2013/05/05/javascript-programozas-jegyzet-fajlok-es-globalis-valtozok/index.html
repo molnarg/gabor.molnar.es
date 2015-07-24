@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -104,126 +105,126 @@
 
 <!-- more -->
 
-<h2 id="html-s-javascript-fjlok">HTML és JavaScript fájlok</h2>
+<h2>HTML és JavaScript fájlok</h2>
 
 <p>Amikor egy weboldalon futtatunk JavaScript kódot, akkor a kódot <code>&lt;script&gt;</code> tag-ek közé írva adjuk meg. Egy HTML oldalon akár több ilyen is lehet. Egy-egy <code>&lt;script&gt;</code> tag tartalmát <strong>külső fájlként is megadhatjuk az <code>src</code> attribútum használatával</strong>:</p>
 
 <p>```html index.html
-&lt;!DOCTYPE html&gt;</p>
+&lt;!DOCTYPE html&gt;
 <html>
 <head></head>
-<body>
+<body></p>
 
 <!-- Ez egy 'beágyazott' script tag, ami kiírja, hogy "16 * 42 = 672" -->
+
 <script>
 var szorzat = 16 * 42;
 document.write('16 * 42 = ' + szorzat);
 </script>
 
 <!-- Ez egy külső fájlként hivatkozott script tag. -->
+
 <script src="elso.js"></script>
 
 <!-- Ez egy másik, külső fájlként hivatkozott script tag. -->
+
 <script src="masodik.js"></script>
 
-<body>
+<p><body>
+</html>
+```</p>
 
-```
+<p>Ilyenkor a böngésző a következőképpen jár el:</p>
 
-Ilyenkor a böngésző a következőképpen jár el:
+<ol>
+<li>lefuttatja az első, beágyazott kódrészletet (ami kiírja hogy <code>16 * 42 = 672</code>)</li>
+<li>letölti az <code>elso.js</code> fájlt (vagy beolvassa a lemezről, ha a HTML helyi fájl)</li>
+<li>lefuttatja a letöltött kódrészletet</li>
+<li>letölti a <code>masodik.js</code> fájlt (vagy beolvassa a lemezről, ha a HTML helyi fájl)</li>
+<li>lefuttatja a letöltött kódrészletet</li>
+</ol>
 
-1. lefuttatja az első, beágyazott kódrészletet (ami kiírja hogy `16 * 42 = 672`)
-2. letölti az `elso.js` fájlt (vagy beolvassa a lemezről, ha a HTML helyi fájl)
-3. lefuttatja a letöltött kódrészletet
-4. letölti a `masodik.js` fájlt (vagy beolvassa a lemezről, ha a HTML helyi fájl)
-5. lefuttatja a letöltött kódrészletet
+<p>Az <code>elso.js</code> és a <code>masodik.js</code> tartalma ilyenkor mindig JavaScript kód (HTML nélkül), például:</p>
 
-Az `elso.js` és a `masodik.js` tartalma ilyenkor mindig JavaScript kód (HTML nélkül), például:
-
-```javascript elso.js
+<p><code>javascript elso.js
 // Az elso.js fájl tartalma:
-document.write('Ezt a szoveget az elso fajl irta ki.');
-```
+document.write(&#39;Ezt a szoveget az elso fajl irta ki.&#39;);
+</code></p>
 
-```javascript masodik.js
+<p><code>javascript masodik.js
 // A masodik.js fájl tartalma:
-document.write('Ezt a szoveget a masodik fajl irta ki.');
-```
+document.write(&#39;Ezt a szoveget a masodik fajl irta ki.&#39;);
+</code></p>
 
-Ha az `src` attribútum csak egy fájlnevet tartalmaz, akkor a böngésző a fájlt abban a mappában fogja keresni, ahol a HTML fájl van. Tartalmazhat teljes URL-t is (pl. `http://sajatweboldalam.hu/elso.js`), ilyenkor a fájl az adott helyről tölti le.
+<p>Ha az <code>src</code> attribútum csak egy fájlnevet tartalmaz, akkor a böngésző a fájlt abban a mappában fogja keresni, ahol a HTML fájl van. Tartalmazhat teljes URL-t is (pl. <code>http://sajatweboldalam.hu/elso.js</code>), ilyenkor a fájl az adott helyről tölti le.</p>
 
-Globális változók
------------------
+<h2>Globális változók</h2>
 
-Amikor egy függvényben a `var` kulcsszót használva létrehozunk egy változót, akkor az a változó csak a függvényen belül látszik. Az ilyen változókat **lokális változók**nak nevezzük. Ha nem egy függvényen belül használjuk a `var` kulcsszót változó létrehozására, akkor globális változó jön létre. Az eddigi programokban tehát legtöbbször globális változókkal dolgoztunk.
+<p>Amikor egy függvényben a <code>var</code> kulcsszót használva létrehozunk egy változót, akkor az a változó csak a függvényen belül látszik. Az ilyen változókat <strong>lokális változók</strong>nak nevezzük. Ha nem egy függvényen belül használjuk a <code>var</code> kulcsszót változó létrehozására, akkor globális változó jön létre. Az eddigi programokban tehát legtöbbször globális változókkal dolgoztunk.</p>
 
-A következő példában az `elso.js` egy globális változót hoz létre, a `masodik.js` pedig ezt a változót iratja ki:
+<p>A következő példában az <code>elso.js</code> egy globális változót hoz létre, a <code>masodik.js</code> pedig ezt a változót iratja ki:</p>
 
-```javascript elso.js
+<p><code>javascript elso.js
 // Az elso.js fájl tartalma:
 var n = 42;
-```
+</code></p>
 
-```javascript masodik.js
+<p><code>javascript masodik.js
 // A masodik.js fájl tartalma:
-document.write("Az elso.js altal letrehozott globalis valtozo tartalma: " + n);
-```
+document.write(&quot;Az elso.js altal letrehozott globalis valtozo tartalma: &quot; + n);
+</code></p>
 
-A HTML-ben a következő szöveget fogjuk látni: `Az elso.js altal letrehozott globalis valtozo tartalma: 42`.
+<p>A HTML-ben a következő szöveget fogjuk látni: <code>Az elso.js altal letrehozott globalis valtozo tartalma: 42</code>.</p>
 
-Létezik másik két módszer is a globális változók létrehozására, ami akár függvényeken belül is használható:
+<p>Létezik másik két módszer is a globális változók létrehozására, ami akár függvényeken belül is használható:</p>
 
-* `window.x = 5;`
-  * ha van `x` nevű globális változó: értékül adjuk neki az 5-öt
-  * ha nincs `x` nevű globális változó: létrejön, és értékül adjuk neki az 5-öt
-* `y = 10;`
-  * ha van `y` nevű lokális változó: értékül adjuk neki a 10-et
-  * ha van `y` nevű globális változó: értékül adjuk neki a 10-et
-  * ha nincs `y` nevű lokális vagy globális változó: létrejön az `y` *globális* változó, és értékül adjuk neki a 10-et
+<ul>
+<li><code>window.x = 5;</code>
 
-Látható, hogy a második módszer kísértetiesen hasonlít a lokális változó létrehozására használható `var y = 10;`-hez. Ha nem figyelünk oda, akkor könnyen létrehozhatunk globális változókat lokális változók helyett függvények kódjában is. Hogy ez miért lehet baj, azt a következő rész mutatja be.
+<ul>
+<li>ha van <code>x</code> nevű globális változó: értékül adjuk neki az 5-öt</li>
+<li>ha nincs <code>x</code> nevű globális változó: létrejön, és értékül adjuk neki az 5-öt</li>
+</ul></li>
+<li><code>y = 10;</code>
 
-Ha lehet, használjunk lokális változókat!
------------------------------------------
+<ul>
+<li>ha van <code>y</code> nevű lokális változó: értékül adjuk neki a 10-et</li>
+<li>ha van <code>y</code> nevű globális változó: értékül adjuk neki a 10-et</li>
+<li>ha nincs <code>y</code> nevű lokális vagy globális változó: létrejön az <code>y</code> <em>globális</em> változó, és értékül adjuk neki a 10-et</li>
+</ul></li>
+</ul>
 
-Függvényekben nagyon könnyen hibákhoz vezet az, ha mindenre globális változót használunk.
+<p>Látható, hogy a második módszer kísértetiesen hasonlít a lokális változó létrehozására használható <code>var y = 10;</code>-hez. Ha nem figyelünk oda, akkor könnyen létrehozhatunk globális változókat lokális változók helyett függvények kódjában is. Hogy ez miért lehet baj, azt a következő rész mutatja be.</p>
 
-Egy példa arra, hogy milyen hibákról van szó:
+<h2>Ha lehet, használjunk lokális változókat!</h2>
 
-```javascript
-// Program, ami kiiírja az összes egyjegyű szám négyzetét.
+<p>Függvényekben nagyon könnyen hibákhoz vezet az, ha mindenre globális változót használunk.</p>
 
-var negyzet_kiiras = function(x) {
-  i = x * x;  // Lemaradt a var kulcsszó, ezért itt a globális i változónak adunk értéket
-  document.write(x + " négyzete: " + i + '<br />');
-};
+<p>Egy példa arra, hogy milyen hibákról van szó:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// Program, ami kiiírja az összes egyjegyű szám négyzetét.</span>
 
-// Az 'i' ciklusváltozó globális, mert nem függvényben hoztuk létre
-for (var i = 0; i &lt; 10; i++) {
-  negyzet_kiiras(i);
-}
-```
+<span class="kd">var</span> <span class="nx">negyzet_kiiras</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">i</span> <span class="o">=</span> <span class="nx">x</span> <span class="o">*</span> <span class="nx">x</span><span class="p">;</span>  <span class="c1">// Lemaradt a var kulcsszó, ezért itt a globális i változónak adunk értéket</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">x</span> <span class="o">+</span> <span class="s2">&quot; négyzete: &quot;</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="s1">&#39;&lt;br&gt;&#39;</span><span class="p">);</span>
+<span class="p">};</span>
 
-Ez a program a következőket írja ki:
-
-```
-0 négyzete: 0
+<span class="c1">// Az &#39;i&#39; ciklusváltozó globális, mert nem függvényben hoztuk létre</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">negyzet_kiiras</span><span class="p">(</span><span class="nx">i</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Ez a program a következőket írja ki:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">0 négyzete: 0
 1 négyzete: 1
 2 négyzete: 4
 5 négyzete: 25
-```
-
-A függvényben egy elírás miatt lemaradt a `var`, ezért a globális `i` változót használta egy ideiglenes érték eltárolására. Ezt a változót használtuk a for ciklusban is, ez okozta a problémát. Az ilyen hibák nehezen felderíthetők, mert csak ritkán jönnek elő (pl. csak akkor, ha a ciklusváltozó neve éppen `i`), és nagyon furcsa hatásokat tudnak produkálni. A javított `negyzet_kiiras` függvény, és a program helyes kimenete:
-
-```javascript
-var negyzet_kiiras = function(x) {
-  var i = x * x;
-  document.write(x + " négyzete: " + i + '<br />');
-};
-```
-
-```
-0 négyzete: 0
+</code></pre></div>
+<p>A függvényben egy elírás miatt lemaradt a <code>var</code>, ezért a globális <code>i</code> változót használta egy ideiglenes érték eltárolására. Ezt a változót használtuk a for ciklusban is, ez okozta a problémát. Az ilyen hibák nehezen felderíthetők, mert csak ritkán jönnek elő (pl. csak akkor, ha a ciklusváltozó neve éppen <code>i</code>), és nagyon furcsa hatásokat tudnak produkálni. A javított <code>negyzet_kiiras</code> függvény, és a program helyes kimenete:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">negyzet_kiiras</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="nx">x</span> <span class="o">*</span> <span class="nx">x</span><span class="p">;</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">x</span> <span class="o">+</span> <span class="s2">&quot; négyzete: &quot;</span> <span class="o">+</span> <span class="nx">i</span> <span class="o">+</span> <span class="s1">&#39;&lt;br&gt;&#39;</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">0 négyzete: 0
 1 négyzete: 1
 2 négyzete: 4
 3 négyzete: 9
@@ -233,22 +234,21 @@ var negyzet_kiiras = function(x) {
 7 négyzete: 49
 8 négyzete: 64
 9 négyzete: 81
-```
+</code></pre></div>
+<p>Egy egyszerű szabály betartásával megelőzhetőek a hasonló problémák: <strong>a függvények ideiglenes változói mindig legyenek lokálisak!</strong> A lokális változók a függvényen belül mindig &quot;eltakarják&quot; az ugyanolyan nevű globális változókat, tehát nem kell körültekintőnek lenni a lokális változók elnevezésénél, lehet akár azonos neve is egy globális változóval.</p>
 
-Egy egyszerű szabály betartásával megelőzhetőek a hasonló problémák: **a függvények ideiglenes változói mindig legyenek lokálisak!** A lokális változók a függvényen belül mindig "eltakarják" az ugyanolyan nevű globális változókat, tehát nem kell körültekintőnek lenni a lokális változók elnevezésénél, lehet akár azonos neve is egy globális változóval.
+<h2>Függvénykönyvtár példa</h2>
 
-Függvénykönyvtár példa
-----------------------
+<p>Rengeteg letölthető JavaScript függvénykönyvtár létezik, amik a legkülönfélébb dolgokat tesznek lehetővé. Egy népszerű függvénykönyvtár pl. az underscore. Ez egyetlen globális változót hoz létre, aminek a neve <code>_</code> (alulvonás) és objektum típusú. Ennek az objektumnak sok metódusa van, mindegyik más feladatot képes elvégezni. Az API dokumentáció a függvénykönyvtár weboldalán megtalálható: <a href="http://underscorejs.org">http://underscorejs.org</a>. Az <code>_.random</code> metódus véletlen számok generálására használható (<a href="http://underscorejs.org/#random">dokumentáció</a>), például így:</p>
 
-Rengeteg letölthető JavaScript függvénykönyvtár létezik, amik a legkülönfélébb dolgokat tesznek lehetővé. Egy népszerű függvénykönyvtár pl. az underscore. Ez egyetlen globális változót hoz létre, aminek a neve `_` (alulvonás) és objektum típusú. Ennek az objektumnak sok metódusa van, mindegyik más feladatot képes elvégezni. Az API dokumentáció a függvénykönyvtár weboldalán megtalálható: [http://underscorejs.org](http://underscorejs.org). Az `_.random` metódus véletlen számok generálására használható ([dokumentáció](http://underscorejs.org/#random)), például így:
-
-```html otoslotto.html
+<p>```html otoslotto.html
 &lt;!DOCTYPE html&gt;
 <html>
 <head></head>
-<body>
+<body></p>
 
 <!-- Az underscore betöltése. Léterjön a _ globális változó. -->
+
 <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore.js">
 </script>
 
@@ -260,14 +260,24 @@ for (var i = 0; i < 5; i++) {
 }
 </script>
 
-<body>
-
-```
-
-</body></body></html></body></body></html>
+<p><body>
+</html>
+```</p>
 
 
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

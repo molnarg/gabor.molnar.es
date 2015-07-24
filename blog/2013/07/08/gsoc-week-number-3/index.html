@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -102,21 +103,32 @@
 
 <p>Last week was about completing the compression code, adding logging and starting the stream implementation.</p>
 
-<p>Header compression is something I’ve been working on for approximately a week, and now it’s finally complete! I’ve written a <a href="/blog/2013/07/03/the-http-slash-2-header-compression-implementation-of-node-http2/">blog post</a> last week about trying it out. The compression code is not as optimized as it could be, but it’s a good start. It will probably improve in the future. The progress will be tracked in <a href="https://github.com/molnarg/node-http2/issues/3">this issue</a>. After it was finalized, I’ve spent a sleepless night with coming up with a <a href="http://lists.w3.org/Archives/Public/ietf-http-wg/2013JulSep/0181.html">proposal</a> for making the spec easier to implement.</p>
+<p>Header compression is something I&#39;ve been working on for approximately a week, and now it&#39;s finally complete! I&#39;ve written a <a href="/blog/2013/07/03/the-http-slash-2-header-compression-implementation-of-node-http2/">blog post</a> last week about trying it out. The compression code is not as optimized as it could be, but it&#39;s a good start. It will probably improve in the future. The progress will be tracked in <a href="https://github.com/molnarg/node-http2/issues/3">this issue</a>. After it was finalized, I&#39;ve spent a sleepless night with coming up with a <a href="http://lists.w3.org/Archives/Public/ietf-http-wg/2013JulSep/0181.html">proposal</a> for making the spec easier to implement.</p>
 
-<p><img style="float: right; margin-left: 1em;" src="/img/Akeley-Minnesota-Paul-Bunyan.jpg" /></p>
+<p><img style="float: right; margin-left: 1em;" src="/img/Akeley-Minnesota-Paul-Bunyan.jpg"></p>
 
-<p>For logging, I chose <a href="https://github.com/trentm/node-bunyan">node-bunyan</a>. It’s a great logging library with JSON format output. The biggest upside of using it is that the log can be much more detailed than with other libraries (very important for debugging), while remaining easy to search and pretty printable if needed. There’s a <a href="http://blog.nodejs.org/2012/03/28/service-logging-in-json-with-bunyan/">great blog post on the node.js blog</a> about it. It is an optional dependency, so it won’t burn CPU cycles when you don’t want it to.</p>
+<p>For logging, I chose <a href="https://github.com/trentm/node-bunyan">node-bunyan</a>. It&#39;s a great logging library with JSON format output. The biggest upside of using it is that the log can be much more detailed than with other libraries (very important for debugging), while remaining easy to search and pretty printable if needed. There&#39;s a <a href="http://blog.nodejs.org/2012/03/28/service-logging-in-json-with-bunyan/">great blog post on the node.js blog</a> about it. It is an optional dependency, so it won&#39;t burn CPU cycles when you don&#39;t want it to.</p>
 
-<p>By the way, if the origin of the name ‘bunyan’ is not clear to you (which is probably the case if you are not American), have a look at <a href="http://en.wikipedia.org/wiki/Paul_Bunyan">this</a> and <a href="http://en.wiktionary.org/wiki/log#Verb">this</a> page on Wikipedia :)</p>
+<p>By the way, if the origin of the name &#39;bunyan&#39; is not clear to you (which is probably the case if you are not American), have a look at <a href="http://en.wikipedia.org/wiki/Paul_Bunyan">this</a> and <a href="http://en.wiktionary.org/wiki/log#Verb">this</a> page on Wikipedia :)</p>
 
 <p>The stream code just started to arrive. Originally, I planned to write the <code>Connection</code> class first, but the stream multiplexing was not that easy to implement as it seemed to, and I though implementing the <code>Stream</code> first would make it easier to figure it out, so the connection code remains for this week.</p>
 
-<p>As usual, the latest code is published on npm (just type <code>npm install http2</code> to install it), and the <a href="http://molnarg.github.io/node-http2/framer.html">hosted version of the docs</a> was updated as well. Feel free to open issues in the <a href="https://github.com/molnarg/node-http2/issues">issue tracker</a> or just <a href="&#109;&#097;&#105;&#108;&#116;&#111;:&#103;&#097;&#098;&#111;&#114;&#064;&#109;&#111;&#108;&#110;&#097;&#114;&#046;&#101;&#115;">email me</a> directly if you find any problem.</p>
+<p>As usual, the latest code is published on npm (just type <code>npm install http2</code> to install it), and the <a href="http://molnarg.github.io/node-http2/framer.html">hosted version of the docs</a> was updated as well. Feel free to open issues in the <a href="https://github.com/molnarg/node-http2/issues">issue tracker</a> or just <a href="mailto:gabor@molnar.es">email me</a> directly if you find any problem.</p>
 
 
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

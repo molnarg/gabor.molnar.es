@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -96,142 +97,126 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
 
-				<p>A <code>&lt;canvas&gt;</code> egy olyan HTML element, ami egy “rajzvásznat” jelenít meg, amire JavaScript segítségével lehet rajzolni. A rajzoló függvények összefoglaló neve <strong>Canvas API</strong>.</p>
+				<p>A <code>&lt;canvas&gt;</code> egy olyan HTML element, ami egy &quot;rajzvásznat&quot; jelenít meg, amire JavaScript segítségével lehet rajzolni. A rajzoló függvények összefoglaló neve <strong>Canvas API</strong>.</p>
 
 <!-- more -->
 
-<h2 id="inicializci">Inicializáció</h2>
+<h2>Inicializáció</h2>
 
 <p>Az inicializáció során a JavaScript kódban lekérjük a vászon referenciáját (<code>rajz</code> változó), majd kiválasztjuk annak 2 dimenziós rajzoló kontextusát (<code>context</code> változó). Ez egy objektum, aminek különböző függvényeit meghívva lehet rajzolni.</p>
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
 
-<p>```html
-&lt;!DOCTYPE html&gt;</p>
-<html>
-<head></head>
-<body>
+<span class="c">&lt;!-- Egy 500x500 pixel méretű rajzvászon, &quot;rajz&quot; id-vel. --&gt;</span>
+<span class="nt">&lt;canvas</span> <span class="na">width=</span><span class="s">&quot;500&quot;</span> <span class="na">height=</span><span class="s">&quot;500&quot;</span> <span class="na">id=</span><span class="s">&quot;rajz&quot;</span><span class="nt">&gt;&lt;/canvas&gt;</span>
 
-<!-- Egy 500x500 pixel méretű rajzvászon, "rajz" id-vel. -->
-<canvas width="500" height="500" id="rajz"></canvas>
+<span class="nt">&lt;script&gt;</span>
+  <span class="c1">// A canvas objektumhoz az id-je alapján lehet hozzáférni:</span>
+  <span class="kd">var</span> <span class="nx">rajz</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;rajz&#39;</span><span class="p">);</span>
 
-<script>
-  // A canvas objektumhoz az id-je alapján lehet hozzáférni:
-  var rajz = document.getElementById('rajz');
-  
-  // A rajzoló függvényeket a vászon 2 dimenziós "kontextusában" fogjuk használni
-  // (van 3 dimenziós is, de azzal most nem foglalkozunk)
-  var context = rajz.getContext('2d');
-  
-  // Ide jön a további rajzoló kód
-  // ...
-</script>
+  <span class="c1">// A rajzoló függvényeket a vászon 2 dimenziós &quot;kontextusában&quot; fogjuk használni</span>
+  <span class="c1">// (van 3 dimenziós is, de azzal most nem foglalkozunk)</span>
+  <span class="kd">var</span> <span class="nx">context</span> <span class="o">=</span> <span class="nx">rajz</span><span class="p">.</span><span class="nx">getContext</span><span class="p">(</span><span class="s1">&#39;2d&#39;</span><span class="p">);</span>
 
-<body>
+  <span class="c1">// Ide jön a további rajzoló kód</span>
+  <span class="c1">// ...</span>
+<span class="nt">&lt;/script&gt;</span>
 
-```
+<span class="nt">&lt;body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div>
+<h2>A kurzor</h2>
 
-A kurzor
---------
+<p>A rajzvásznon mindig van egy láthatatlan kurzor aminek van pozíciója, és iránya. A kurzor kezdő pozíciója a vászon bal felső sarka, és a bal alsó sarok felé néz. Rajzolni mindig a kurzorhoz képest lehet, például utasíthatjuk a gépet, hogy &quot;rajzolj egy kört, aminek a középpontja a kurzor&quot; (lásd később). A kurzor mozgatására használható függvények:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// A kurzor elmozgatása balra x-el, és előre y-nal</span>
+<span class="c1">// Az x és y helyén számnak, vagy számot tartalmazó változónak kell állnia!</span>
+<span class="c1">// (ez a következő példáknál is érvényes)</span>
+<span class="nx">context</span><span class="p">.</span><span class="nx">translate</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">);</span>
 
-A rajzvásznon mindig van egy láthatatlan kurzor aminek van pozíciója, és iránya. A kurzor kezdő pozíciója a vászon bal felső sarka, és a bal alsó sarok felé néz. Rajzolni mindig a kurzorhoz képest lehet, például utasíthatjuk a gépet, hogy "rajzolj egy kört, aminek a középpontja a kurzor" (lásd később). A kurzor mozgatására használható függvények:
-
-```javascript
-// A kurzor elmozgatása balra x-el, és előre y-nal
-// Az x és y helyén számnak, vagy számot tartalmazó változónak kell állnia!
-// (ez a következő példáknál is érvényes)
-context.translate(x, y);
-
-// A kurzor elfordítás az óramutató járásával megegyező irányba r radiánnal
-context.rotate(r);
-```
-
-Ha fokban szeretnénk számolni radián helyett, használjuk például ezt a függvényt:
-```javascript
+<span class="c1">// A kurzor elfordítás az óramutató járásával megegyező irányba r radiánnal</span>
+<span class="nx">context</span><span class="p">.</span><span class="nx">rotate</span><span class="p">(</span><span class="nx">r</span><span class="p">);</span>
+</code></pre></div>
+<p>Ha fokban szeretnénk számolni radián helyett, használjuk például ezt a függvényt:
+<code>javascript
 // A kurzor elfordítás az óramutató járásával megegyező irányba f fokkal
 var rotateDegree = function(f) {
   context.rotate((f / 360) * 2 * Math.PI);
 };
-```
+</code></p>
 
-Alakzatok
----------
+<h2>Alakzatok</h2>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// Rajzol egy szelesseg * magassag méretű téglalap körvonalat a kurzorhoz képest eltolva.</span>
+<span class="c1">// Az eltolást az x és az y adja meg (értékük lehet 0 is).</span>
+<span class="c1">// A téglalap a kurzorhoz képest előre és balra fog elhelyezkedni (+eltolás).</span>
+<span class="nx">context</span><span class="p">.</span><span class="nx">strokeRect</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">,</span> <span class="nx">szelesseg</span><span class="p">,</span> <span class="nx">magassag</span><span class="p">)</span>
 
-```javascript
-// Rajzol egy szelesseg * magassag méretű téglalap körvonalat a kurzorhoz képest eltolva.
-// Az eltolást az x és az y adja meg (értékük lehet 0 is).
-// A téglalap a kurzorhoz képest előre és balra fog elhelyezkedni (+eltolás).
-context.strokeRect(x, y, szelesseg, magassag)
+<span class="c1">// Ez a függvény rajzol egy r pixel sugarú kört aminek a középpontja a kurzor</span>
+<span class="kd">var</span> <span class="nx">circle</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">context</span><span class="p">.</span><span class="nx">beginPath</span><span class="p">();</span>                       <span class="c1">// elkezd egy útvonalat</span>
+  <span class="nx">context</span><span class="p">.</span><span class="nx">arc</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>  <span class="c1">// rajzol egy körívet</span>
+  <span class="nx">context</span><span class="p">.</span><span class="nx">stroke</span><span class="p">();</span>                          <span class="c1">// beszínezi a körívet</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>Kitöltött alakzatok létrehozásához használjuk a téglalap esetén a <code>context.fillRect</code>, a kör esetén a <code>context.fill</code> függvényeket a fenti <code>context.strokeRect</code> és <code>context.stroke</code> helyett. Ezen kívül nem kell semmit megváltoztatni a kódban.</p>
 
-// Ez a függvény rajzol egy r pixel sugarú kört aminek a középpontja a kurzor
-var circle = function(r) {
-  context.beginPath();                       // elkezd egy útvonalat
-  context.arc(0, 0, r, 0, Math.PI*2, true);  // rajzol egy körívet
-  context.stroke();                          // beszínezi a körívet
-};
-```
+<h2>Színek</h2>
 
-Kitöltött alakzatok létrehozásához használjuk a téglalap esetén a `context.fillRect`, a kör esetén a `context.fill` függvényeket a fenti `context.strokeRect` és `context.stroke` helyett. Ezen kívül nem kell semmit megváltoztatni a kódban.
+<p>A kurzorhoz mindig tartozik egy kitöltési szín, és egy körvonalszín. Az alakzatok rajzolása mindig az aktuális kitöltési illetve vonalszínnel történik. Alapértelmezés szerint a vonalszín fekete, a kitöltési szín pedig átlátszó. Ezeket egyszerűen meg lehet változtatni:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">context</span><span class="p">.</span><span class="nx">strokeStyle</span> <span class="o">=</span> <span class="s1">&#39;green&#39;</span> <span class="p">;</span>  <span class="c1">// A kitöltési szín legyen zöld</span>
+<span class="nx">context</span><span class="p">.</span><span class="nx">fillStyle</span> <span class="o">=</span> <span class="s1">&#39;blue&#39;</span><span class="p">;</span>      <span class="c1">// A vonalszín legyen kék</span>
+</code></pre></div>
+<p>Az angol nevek mellett használható többféle színskála is. Ezek egyike az ún. HSL színskála (példuál: <code>context.strokeStyle = &#39;hsl(123, 50%, 50%)&#39;;</code>), ezzel a http://hslpicker.com/ weboldalon lehet kisérletezni.</p>
 
-Színek
-------
+<h2>Kurzor mentés, visszatöltés</h2>
 
-A kurzorhoz mindig tartozik egy kitöltési szín, és egy körvonalszín. Az alakzatok rajzolása mindig az aktuális kitöltési illetve vonalszínnel történik. Alapértelmezés szerint a vonalszín fekete, a kitöltési szín pedig átlátszó. Ezeket egyszerűen meg lehet változtatni:
+<p>Szükség lehet arra, hogy a kurzor aktuális helyzetét és színét elmentsük, hogy később vissza lehessen tölteni. Például egy összetett alakzatot kirajzoló függvénynek először illik elmenteni a kurzort, és az összetett alakzat kirajzolása után visszatölteni. Erre azért van szükség, mert a hívó arra számít, hogy a függvény meghívása után is ugyanott találja a kurzort, ahol a meghívás előtt volt.</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">context</span><span class="p">.</span><span class="nx">save</span><span class="p">();</span>    <span class="c1">// A kurzor elmentése.</span>
+<span class="c1">// egyéb műveletek...</span>
+<span class="nx">context</span><span class="p">.</span><span class="nx">restore</span><span class="p">();</span> <span class="c1">// A kurzor visszatöltése.</span>
+</code></pre></div>
+<h2>Animáció</h2>
 
-```javascript
-context.strokeStyle = 'green' ;  // A kitöltési szín legyen zöld
-context.fillStyle = 'blue';      // A vonalszín legyen kék
-```
+<p>Animációt létrehozni a Canvas API-val nem nehéz, de szükséges hozzá néhány olyan függvény, amiket nem érdemes külön-külön megismernünk, mert ritkán használatosak. Ehelyett használjuk a következő függvényt, ami minden képkocka elején letörli a vásznat, és meghívja az argumentumként megadott <code>draw_callback</code> függvényt, ami az adott képkocka kirajzolását kell hogy elvégezze.</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">animate</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">draw_callback</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">nextFrame</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">requestAnimationFrame</span> <span class="o">||</span>
+                  <span class="nb">window</span><span class="p">.</span><span class="nx">mozRequestAnimationFrame</span> <span class="o">||</span>
+                  <span class="nb">window</span><span class="p">.</span><span class="nx">msRequestAnimationFrame</span><span class="p">;</span>
+  <span class="nx">nextFrame</span><span class="p">(</span><span class="kd">function</span> <span class="nx">callback</span><span class="p">(</span><span class="nx">timestamp</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">context</span><span class="p">.</span><span class="nx">save</span><span class="p">();</span>
+    <span class="nx">context</span><span class="p">.</span><span class="nx">setTransform</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="nx">context</span><span class="p">.</span><span class="nx">clearRect</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">context</span><span class="p">.</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">width</span><span class="p">,</span> <span class="nx">context</span><span class="p">.</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">height</span><span class="p">);</span>
+    <span class="nx">draw_callback</span><span class="p">(</span><span class="nx">timestamp</span><span class="p">);</span>
+    <span class="nx">context</span><span class="p">.</span><span class="nx">restore</span><span class="p">();</span>
+    <span class="nx">nextFrame</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>Példa az <code>animate</code> használatára, ami egy jobbra mozgó téglalapot rajzol ki:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">animate</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span> <span class="p">{</span>        <span class="c1">// A t az animáció kezdete óta eltelt idő (ms-ben).</span>
+  <span class="nx">context</span><span class="p">.</span><span class="nx">translate</span><span class="p">(</span><span class="nx">t</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>      <span class="c1">// A kurzort a bal felső sarokból balra mozgatjuk.</span>
+  <span class="nx">context</span><span class="p">.</span><span class="nx">strokeRect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">);</span> <span class="c1">// Rajzolunk egy 100x100 pixeles téglalapot.</span>
+<span class="p">});</span>
+</code></pre></div>
+<h2>Olvass tovább</h2>
 
-Az angol nevek mellett használható többféle színskála is. Ezek egyike az ún. HSL színskála (példuál: `context.strokeStyle = 'hsl(123, 50%, 50%)';`), ezzel a http://hslpicker.com/ weboldalon lehet kisérletezni.
-
-Kurzor mentés, visszatöltés
----------------------------
-
-Szükség lehet arra, hogy a kurzor aktuális helyzetét és színét elmentsük, hogy később vissza lehessen tölteni. Például egy összetett alakzatot kirajzoló függvénynek először illik elmenteni a kurzort, és az összetett alakzat kirajzolása után visszatölteni. Erre azért van szükség, mert a hívó arra számít, hogy a függvény meghívása után is ugyanott találja a kurzort, ahol a meghívás előtt volt.
-
-```javascript
-context.save();    // A kurzor elmentése.
-// egyéb műveletek...
-context.restore(); // A kurzor visszatöltése.
-```
-
-Animáció
---------
-
-Animációt létrehozni a Canvas API-val nem nehéz, de szükséges hozzá néhány olyan függvény, amiket nem érdemes külön-külön megismernünk, mert ritkán használatosak. Ehelyett használjuk a következő függvényt, ami minden képkocka elején letörli a vásznat, és meghívja az argumentumként megadott `draw_callback` függvényt, ami az adott képkocka kirajzolását kell hogy elvégezze.
-
-```javascript
-var animate = function(context, draw_callback) {
-  var nextFrame = window.requestAnimationFrame ||
-                  window.mozRequestAnimationFrame ||
-                  window.msRequestAnimationFrame;
-  nextFrame(function callback(timestamp) {
-    context.save();
-    context.setTransform(1, 0, 0, 1, 0, 0);
-    context.clearRect (0, 0, context.canvas.width, context.canvas.height);
-    draw_callback(timestamp);
-    context.restore();
-    nextFrame(callback);
-  });
-};
-```
-
-Példa az `animate` használatára, ami egy jobbra mozgó téglalapot rajzol ki:
-
-```javascript
-animate(context, function(t) {        // A t az animáció kezdete óta eltelt idő (ms-ben).
-  context.translate(t / 100, 0);      // A kurzort a bal felső sarokból balra mozgatjuk.
-  context.strokeRect(0, 0, 100, 100); // Rajzolunk egy 100x100 pixeles téglalapot.
-});
-```
-
-Olvass tovább
--------------
-
-Ha mélyebben érdekel a Canvas API, [ezen az oldalon](https://developer.mozilla.org/en-US/docs/HTML/Canvas/Tutorial) sokkal részletesebb leírás található angolul.
-</body></body></html>
+<p>Ha mélyebben érdekel a Canvas API, <a href="https://developer.mozilla.org/en-US/docs/HTML/Canvas/Tutorial">ezen az oldalon</a> sokkal részletesebb leírás található angolul.</p>
 
 
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

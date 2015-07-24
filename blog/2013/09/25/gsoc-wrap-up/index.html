@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -96,36 +97,36 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
 
-				<p>This year’s Google Summer of Code program has sadly come to an end. It has been a great summer for me: I’ve met fantastic people, worked on software that will hopefully be widely used in the future, and contributed to the evolving HTTP/2 standard.</p>
+				<p>This year&#39;s Google Summer of Code program has sadly come to an end. It has been a great summer for me: I&#39;ve met fantastic people, worked on software that will hopefully be widely used in the future, and contributed to the evolving HTTP/2 standard. </p>
 
 <!-- more -->
 
 <p>My Summer of Code project in numbers:</p>
 
 <ul>
-  <li>2 node.js modules:
-    <ul>
-      <li><a href="https://github.com/molnarg/node-http2">node-http2</a> : an HTTP/2 client and server implementation for node.js</li>
-      <li><a href="https://github.com/molnarg/http2-testpage">http2-testpage</a> : a test server for testing client side HTTP/2 implementations</li>
-    </ul>
-  </li>
-  <li>3147 lines of code (the main HTTP/2 implementation code)</li>
-  <li>2647 lines of test (in 94 node-http2 unit tests, and 32 http2-testpage testcases, providing ~90% <a href="https://github.com/molnarg/node-http2#test-coverage">code coverage</a>)</li>
-  <li>1426 lines of code comment (base of the generated <a href="http://molnarg.github.io/node-http2/doc/">developer documentation</a> and <a href="https://github.com/molnarg/node-http2/wiki/Public-API">API reference</a>)</li>
-  <li>502 <a href="https://github.com/molnarg/node-http2/commits/master">commits</a></li>
-  <li>16 <a href="/blog/categories/google-summer-of-code/">blog posts</a></li>
-  <li>15 <a href="https://github.com/molnarg/node-http2/releases">releases</a></li>
-  <li>launched the second public HTTP/2 server ever (after Microsoft’s <a href="https://github.com/MSOpenTech/http2-katana">http2-katana</a> test server)</li>
-  <li>with the help of one great mentor :)</li>
-</ul>
-
-<p>My http2 node.js module is ready to use, and I don’t plan to break the API in the foreseeable future, so I tagged last week’s release as 1.0.0. As most 1.0.0 software releases, this is the end of a long process, but certainly not the end of the work. There are still lot of things to do:</p>
+<li>2 node.js modules:
 
 <ul>
-  <li>continuously upgrading to the latest draft of the standard (current draft: <a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-06">draft-ietf-httpbis-http2-06</a>)</li>
-  <li>fixing the issues that come up when more and more people start using this module</li>
-  <li>implementing the few <a href="https://github.com/molnarg/node-http2/issues?labels=feature">missing features</a> (the most important one is the <a href="https://github.com/molnarg/node-http2/issues/5">TLS ALPN support</a>)</li>
-  <li><a href="https://github.com/molnarg/node-http2/issues?labels=performance">performance optimization</a></li>
+<li><a href="https://github.com/molnarg/node-http2">node-http2</a> : an HTTP/2 client and server implementation for node.js</li>
+<li><a href="https://github.com/molnarg/http2-testpage">http2-testpage</a> : a test server for testing client side HTTP/2 implementations</li>
+</ul></li>
+<li>3147 lines of code (the main HTTP/2 implementation code)</li>
+<li>2647 lines of test (in 94 node-http2 unit tests, and 32 http2-testpage testcases, providing ~90% <a href="https://github.com/molnarg/node-http2#test-coverage">code coverage</a>)</li>
+<li>1426 lines of code comment (base of the generated <a href="http://molnarg.github.io/node-http2/doc/">developer documentation</a> and <a href="https://github.com/molnarg/node-http2/wiki/Public-API">API reference</a>)</li>
+<li>502 <a href="https://github.com/molnarg/node-http2/commits/master">commits</a></li>
+<li>16 <a href="/blog/categories/google-summer-of-code/">blog posts</a></li>
+<li>15 <a href="https://github.com/molnarg/node-http2/releases">releases</a></li>
+<li>launched the second public HTTP/2 server ever (after Microsoft&#39;s <a href="https://github.com/MSOpenTech/http2-katana">http2-katana</a> test server)</li>
+<li>with the help of one great mentor :)</li>
+</ul>
+
+<p>My http2 node.js module is ready to use, and I don&#39;t plan to break the API in the foreseeable future, so I tagged last week&#39;s release as 1.0.0. As most 1.0.0 software releases, this is the end of a long process, but certainly not the end of the work. There are still lot of things to do:</p>
+
+<ul>
+<li>continuously upgrading to the latest draft of the standard (current draft: <a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-06">draft-ietf-httpbis-http2-06</a>)</li>
+<li>fixing the issues that come up when more and more people start using this module</li>
+<li>implementing the few <a href="the%20most%20important%20one%20is%20the%20%5BTLS%20ALPN%20support%5D">missing features</a></li>
+<li><a href="https://github.com/molnarg/node-http2/issues?labels=performance">performance optimization</a></li>
 </ul>
 
 <p>I will keep maintaining this module in my free time, so expect regular updates in the future too :)</p>
@@ -133,8 +134,19 @@
 <p>I would like to say thank you to all the amazing people who made all of this possible, especially Nick Hurley of Mozilla, my mentor, who spent countless hours with reviewing my code, listening to my problems and giving advice.</p>
 
 
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     

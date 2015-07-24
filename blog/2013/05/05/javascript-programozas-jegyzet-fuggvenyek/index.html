@@ -33,6 +33,15 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
 </head>
 
 
@@ -57,14 +66,6 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="/">Home</a>
-                </li>
-                
-                <li>
-                    <a href="/about.html">About</a>
-                </li>
-                
-                <li>
-                    <a href="/contact.html">Contact</a>
                 </li>
                 
             </ul>
@@ -96,182 +97,161 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
 
-				<h2 id="fggvnyek-a-matematikban">Függvények a matematikában</h2>
+				<h2>Függvények a matematikában</h2>
 
 <p><strong>Bemeneti adatokhoz egy kimeneti adatot rendel hozzá</strong>.</p>
 
 <p>Példák:</p>
 
 <ul>
-  <li>Matematika
-    <ul>
-      <li><code>sin</code> függvény: egy radián értékhez a radián érték szinuszát rendeli hozzá</li>
-      <li><code>T_téglalap</code> függvény: egy téglalap magasságához, és szélességéhez a téglalap területét rendeli hozzá</li>
-    </ul>
-  </li>
-  <li>Fizika
-    <ul>
-      <li><code>v</code> függvény: egy adott út és idő értékhez egy sebességet rendel hozzá</li>
-      <li><code>F</code> függvény: egy adott tömeg és gyorsulás értékhez egy erő értéket rendel hozzá</li>
-    </ul>
-  </li>
-  <li>stb…</li>
+<li>Matematika
+
+<ul>
+<li><code>sin</code> függvény: egy radián értékhez a radián érték szinuszát rendeli hozzá</li>
+<li><code>T_téglalap</code> függvény: egy téglalap magasságához, és szélességéhez a téglalap területét rendeli hozzá</li>
+</ul></li>
+<li>Fizika
+
+<ul>
+<li><code>v</code> függvény: egy adott út és idő értékhez egy sebességet rendel hozzá</li>
+<li><code>F</code> függvény: egy adott tömeg és gyorsulás értékhez egy erő értéket rendel hozzá</li>
+</ul></li>
+<li>stb...</li>
 </ul>
 
 <!-- more -->
 
-<h2 id="fggvnyek-a-programozsban">Függvények a programozásban</h2>
+<h2>Függvények a programozásban</h2>
 
 <p><strong>Bemeneti adatokhoz egy <em>opcionális</em> kimeneti adatot rendel hozzá</strong>, illetve <strong>egyéb műveleteket végezhet el</strong>.</p>
 
 <p>Fontos fogalmak:</p>
 
 <ul>
-  <li>a bemeneti adatok: a függvény <strong>argumentumai</strong> (function arguments)</li>
-  <li>az elvégzett műveletek leírása (pl. számolás a bemeneti adatok alapján): a függvény <strong>kódja</strong> (code)</li>
-  <li>a bementi adatokhoz hozzárendelt érték: a függvény <strong>visszatérési értéke</strong> (return value)</li>
+<li>a bemeneti adatok: a függvény <strong>argumentumai</strong> (function arguments)</li>
+<li>az elvégzett műveletek leírása (pl. számolás a bemeneti adatok alapján): a függvény <strong>kódja</strong> (code)</li>
+<li>a bementi adatokhoz hozzárendelt érték: a függvény <strong>visszatérési értéke</strong> (return value)</li>
 </ul>
 
 <p>Például egy rajzolóprogramban a következő függvények lehetnek megtalálhatók:</p>
 
 <ul>
-  <li>egy képpont színének lekérdezése
-    <ul>
-      <li><em>argumentumok</em>: a képpont x és y koordinátája</li>
-      <li><em>visszatérési érték</em>: a képpont színe</li>
-      <li><em>egyéb műveletek</em>: nincs</li>
-    </ul>
-  </li>
-  <li>egy képpont színezése
-    <ul>
-      <li><em>argumentumok</em>: a képpont x és y koordinátája, és a kívánt szín</li>
-      <li><em>visszatérési érték</em>: nincs</li>
-      <li><em>egyéb műveletek</em>: az adott képpontot a megadott színűre színezi</li>
-    </ul>
-  </li>
+<li>egy képpont színének lekérdezése
+
+<ul>
+<li><em>argumentumok</em>: a képpont x és y koordinátája</li>
+<li><em>visszatérési érték</em>: a képpont színe</li>
+<li><em>egyéb műveletek</em>: nincs</li>
+</ul></li>
+<li>egy képpont színezése
+
+<ul>
+<li><em>argumentumok</em>: a képpont x és y koordinátája, és a kívánt szín</li>
+<li><em>visszatérési érték</em>: nincs</li>
+<li><em>egyéb műveletek</em>: az adott képpontot a megadott színűre színezi</li>
+</ul></li>
 </ul>
 
-<p>Legtöbbször az “egyéb műveletek” a legfontosabb rész, mert utasításokat akarunk adni a gépnek (pl. színezd be a megadott képpontot!), nem csak számolunk (pl. mennyi a téglalap területe?).</p>
+<p>Legtöbbször az &quot;egyéb műveletek&quot; a legfontosabb rész, mert utasításokat akarunk adni a gépnek (pl. színezd be a megadott képpontot!), nem csak számolunk (pl. mennyi a téglalap területe?).</p>
 
 <p>Hosszú programokban sokszor <strong>ismétlődő műveletsorokat kell elvégezni</strong>. Például:</p>
 
 <ul>
-  <li>egy fizikai szimulációban sokszor kell sebességet, vagy lendületet számolni</li>
-  <li>egy játékprogramban sokszor kell lekérdezni a leütött billentyűket</li>
-  <li>egy levelező webalkalmazásban sokszor kell üzeneteket küldeni a levelezőszervernek</li>
+<li>egy fizikai szimulációban sokszor kell sebességet, vagy lendületet számolni</li>
+<li>egy játékprogramban sokszor kell lekérdezni a leütött billentyűket</li>
+<li>egy levelező webalkalmazásban sokszor kell üzeneteket küldeni a levelezőszervernek</li>
 </ul>
 
 <p>Egy-egy műveletsort nem akarunk minden egyes alkalommal végig, lépésenként leírni. Ilyenkor érdemes az adott műveletsorokhoz függvényeket létrehozni. Ezután már csak az adott függvényt kell használni a teljes műveletsor leírása helyett.</p>
 
-<h2 id="fggvnyek-ltrehozsa-s-hasznlata">Függvények létrehozása és használata</h2>
+<h2>Függvények létrehozása és használata</h2>
 
 <p>A függvényeket a használat előtt <strong>definiálni</strong> kell:</p>
 
 <ul>
-  <li>meg kell adni a függvény
-    <ul>
-      <li><em>argumentumainak listáját</em></li>
-      <li><em>kódját</em></li>
-      <li><em>visszatérési értékét</em></li>
-    </ul>
-  </li>
-  <li>kapunk egy <strong>referenciát</strong> a függvényre</li>
+<li>meg kell adni a függvény
+
+<ul>
+<li><em>argumentumainak listáját</em></li>
+<li><em>kódját</em></li>
+<li><em>visszatérési értékét</em></li>
+</ul></li>
+<li>kapunk egy <strong>referenciát</strong> a függvényre</li>
 </ul>
 
 <p>JavaScript-ben:</p>
-
-<p><code>javascript
-var terulet = function(a, b) { // a függvény argumentumai: a és b
-  var t = a * b;               // a számolás elvégzése az argumentumok felhasználásával
-  return t;                    // a visszatérési érték a t változó aktuális értéke
-};
-</code></p>
-
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">terulet</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// a függvény argumentumai: a és b</span>
+  <span class="kd">var</span> <span class="nx">t</span> <span class="o">=</span> <span class="nx">a</span> <span class="o">*</span> <span class="nx">b</span><span class="p">;</span>               <span class="c1">// a számolás elvégzése az argumentumok felhasználásával</span>
+  <span class="k">return</span> <span class="nx">t</span><span class="p">;</span>                    <span class="c1">// a visszatérési érték a t változó aktuális értéke</span>
+<span class="p">};</span>
+</code></pre></div>
 <p>A függvény használata, azaz <strong>a függvény meghívása</strong> a referencia segítségével lehetséges:</p>
-
-<p><code>javascript
-var x = terulet(3,4);          // a terulet változó egy referenciát tartalmaz a fv-re!
-document.write(x);             // 12
-</code></p>
-
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">terulet</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">);</span>          <span class="c1">// a terulet változó egy referenciát tartalmaz a fv-re!</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>             <span class="c1">// 12</span>
+</code></pre></div>
 <p>A referencia ugyanolyan érték típus, mint a számok, vagy a sztringek, tehát <strong>változókban lehet tárolni</strong>.</p>
-
-<p><code>javascript
-var area = terulet;            // ezen túl az area változó is ugyanazt
-var y = area(3,4);             // a függvényreferenciát tartalmazza
-document.write(y);             // 12
-</code></p>
-
-<h2 id="rekurzi-s-krnyezeti-vltozk">Rekurzió, és környezeti változók</h2>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">area</span> <span class="o">=</span> <span class="nx">terulet</span><span class="p">;</span>            <span class="c1">// ezen túl az area változó is ugyanazt</span>
+<span class="kd">var</span> <span class="nx">y</span> <span class="o">=</span> <span class="nx">area</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">);</span>             <span class="c1">// a függvényreferenciát tartalmazza</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">y</span><span class="p">);</span>             <span class="c1">// 12</span>
+</code></pre></div>
+<h2>Rekurzió, és környezeti változók</h2>
 
 <p>A JavaScript-ben a függvények <strong>elérhetik a környezetükben levő változókat</strong>, például:</p>
-
-<p><code>javascript
-var szoveg = "42!";           // "külső" változó (sztring)
-var f = function() {
-  document.write(szoveg);     // a függvényen belül elérhető
-};
-f();                          // kiírja, hogy "42!"
-</code></p>
-
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">szoveg</span> <span class="o">=</span> <span class="s2">&quot;42!&quot;</span><span class="p">;</span>           <span class="c1">// &quot;külső&quot; változó (sztring)</span>
+<span class="kd">var</span> <span class="nx">f</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">szoveg</span><span class="p">);</span>     <span class="c1">// a függvényen belül elérhető</span>
+<span class="p">};</span>
+<span class="nx">f</span><span class="p">();</span>                          <span class="c1">// kiírja, hogy &quot;42!&quot;</span>
+</code></pre></div>
 <p>Sőt, elérhetik önmaguk referenciáját is, mivel ez is egy változóban van tárolva! A referencia segítségével <strong>meghívhatják önmagukat is</strong>. Ha egy függvény meghívja önmagát, azt <strong>rekurziónak nevezzük</strong>.</p>
 
-<p>Példa: a <a href="http://hu.wikipedia.org/wiki/Fibonacci-sz%C3%A1mok">Fibonacci sorozat</a> kiszámítása. A Fibonacci sorozat első két eleme: 0 és 1. Minden további eleme az előző két elem összege. Az első néhány elem tehát: 0, 1, 1, 2, 3, 5, 8, 13, 21, … Az első 100 elem kiszámítása függvények, és rekurzió használatával:</p>
+<p>Példa: a <a href="http://hu.wikipedia.org/wiki/Fibonacci-sz%C3%A1mok">Fibonacci sorozat</a> kiszámítása. A Fibonacci sorozat első két eleme: 0 és 1. Minden további eleme az előző két elem összege. Az első néhány elem tehát: 0, 1, 1, 2, 3, 5, 8, 13, 21, ... Az első 100 elem kiszámítása függvények, és rekurzió használatával:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="c1">// Fibonacci fv: az argumentum az elem sorszáma, a visszatérési érték maga az elem:</span>
+<span class="kd">var</span> <span class="nx">fibonacci</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">n</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">fibonacci</span><span class="p">(</span><span class="nx">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nx">fibonacci</span><span class="p">(</span><span class="nx">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
 
-<p>```javascript
-// Fibonacci fv: az argumentum az elem sorszáma, a visszatérési érték maga az elem:
-var fibonacci = function(n) {
-  if (n &lt; 2) {
-    return n;
-  } else {
-    return fibonacci(n - 1) + fibonacci(n - 2);
-  }
-}</p>
-
-<p>for (var i = 0; i &lt; 100; i++) document.write(fibonacci(i) + ‘, ‘);
-```</p>
-
-<h2 id="magasabb-rend-fggvnyek">Magasabb rendű függvények</h2>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">fibonacci</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="p">);</span>
+</code></pre></div>
+<h2>Magasabb rendű függvények</h2>
 
 <p><strong>Olyan függvény, ami egyik argumentumaként függvényt vár.</strong> Ilyen függvény azért lehetséges, mert egy függvény referenciája változóként kezelhető, így argumentumként is át lehet adni. Ezt az argumentumot sokszor <strong>callback</strong> függvénynek nevezik.</p>
 
 <p>Példák magasabbrendű függvényekre:</p>
 
 <ul>
-  <li>késleltetés: egy adott idő letelte után meghívja a megadott callback függvényt</li>
-  <li>rendezés: egy halmaz elemeinek sorba rendezése a függvényként megadott rendezési elv alapján</li>
+<li>késleltetés: egy adott idő letelte után meghívja a megadott callback függvényt</li>
+<li>rendezés: egy halmaz elemeinek sorba rendezése a függvényként megadott rendezési elv alapján</li>
 </ul>
 
 <p>Magasabb rendű függvény használata JavaScript-ben:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Ez az üzenet a weboldal betöltésekor jelenik meg a konzolban.&#39;</span><span class="p">);</span>
 
-<p>```javascript
-console.log(‘Ez az üzenet a weboldal betöltésekor jelenik meg a konzolban.’);</p>
+<span class="kd">var</span> <span class="nx">f</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Ez pedig 5 másodperccel később.&#39;</span><span class="p">);</span>
+<span class="p">};</span>
 
-<p>var f = function() {
-  console.log(‘Ez pedig 5 másodperccel később.’);
-};</p>
-
-<p>setTimeout(f, 5000);
-```</p>
-
+<span class="nx">setTimeout</span><span class="p">(</span><span class="nx">f</span><span class="p">,</span> <span class="mi">5000</span><span class="p">);</span>
+</code></pre></div>
 <p>Nem feltétlenül kell először egy változóba elmenteni a függvény referenciát, közvetlenül is át lehet adni:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Ez az üzenet a weboldal betöltésekor jelenik meg a konzolban.&#39;</span><span class="p">);</span>
 
-<p>```javascript
-console.log(‘Ez az üzenet a weboldal betöltésekor jelenik meg a konzolban.’);</p>
-
-<p>setTimeout(function() {
-  console.log(‘Ez pedig 5 másodperccel később.’);
-}, 5000);
-```</p>
-
-<h2 id="beptett-fggvnyek">Beépített függvények</h2>
+<span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Ez pedig 5 másodperccel később.&#39;</span><span class="p">);</span>
+<span class="p">},</span> <span class="mi">5000</span><span class="p">);</span>
+</code></pre></div>
+<h2>Beépített függvények</h2>
 
 <p>Minden program kommunikál valahogy a külvilággal, pl:</p>
 
 <ul>
-  <li>adatokat ír ki, olvas be</li>
-  <li>a képernyőre rajzol</li>
-  <li>üzeneteket küld más programoknak a hálózaton</li>
+<li>adatokat ír ki, olvas be</li>
+<li>a képernyőre rajzol</li>
+<li>üzeneteket küld más programoknak a hálózaton</li>
 </ul>
 
 <p>Ezekhez a feladatokhoz a <strong>futtatókörnyezet</strong> beépített függvényeit használhatja. A JavaScript esetében a futtatókörnyezet a böngésző, más nyelvek általában más környezetben futnak.</p>
@@ -279,19 +259,30 @@ console.log(‘Ez az üzenet a weboldal betöltésekor jelenik meg a konzolban.�
 <p>A böngésző beépített függvényei például:</p>
 
 <ul>
-  <li><code>document.write(szoveg)</code>: kiírás a HTML-be</li>
-  <li><code>console.log(szoveg)</code>: kiírás a böngésző konzoljába</li>
-  <li><code>Math.sin(x)</code>: az x szinuszát adja vissza</li>
-  <li><code>setDelay(callback, kesleltetes_millisecben)</code>: késleltetés (az első paramétere függvény!)</li>
-  <li><code>setInterval(callback, kesleltetes_millisecben)</code>: periodikusan meghívja a callback függvényt</li>
-  <li><a href="http://nyelvek.inf.elte.hu/leirasok/JavaScript/index.php?chapter=12">matematikai függvények, és dátumkezelés</a></li>
+<li><code>document.write(szoveg)</code>: kiírás a HTML-be</li>
+<li><code>console.log(szoveg)</code>: kiírás a böngésző konzoljába</li>
+<li><code>Math.sin(x)</code>: az x szinuszát adja vissza</li>
+<li><code>setDelay(callback, kesleltetes_millisecben)</code>: késleltetés (az első paramétere függvény!)</li>
+<li><code>setInterval(callback, kesleltetes_millisecben)</code>: periodikusan meghívja a callback függvényt</li>
+<li><a href="http://nyelvek.inf.elte.hu/leirasok/JavaScript/index.php?chapter=12">matematikai függvények, és dátumkezelés</a></li>
 </ul>
 
 <p>A későbbiekben folyamatosan ismerkedni fogunk további hasznos beépített függvényekkel!</p>
 
 
-
-                <hr>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'gabor-molnar';
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
                 <ul class="pager">
                     
