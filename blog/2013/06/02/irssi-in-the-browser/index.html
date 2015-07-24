@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Write your site description here. It will be used as your sites meta description as well!">
+
+    <title>IRSSI in the browser - Gábor Molnár</title>
+
+    <link rel="canonical" href="http://gabor.molnar.es/blog/2013/06/02/irssi-in-the-browser/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/clean-blog.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+
+<body>
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Gábor Molnár</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about.html">About</a>
+                </li>
+                
+                <li>
+                    <a href="/contact.html">Contact</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+    <!-- Post Header -->
+<header class="intro-header" style="background-image: url('/img/home-bg.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <h1>IRSSI in the browser</h1>
+                    
+                    <span class="meta">Posted by Gábor Molnár on June 2, 2013</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+				<p><img src="/img/irssi-in-the-browser.png" style="width: 100%;" /></p>
+
+<p>This is a quick guide to using the <a href="http://irssi.org/">IRSSI</a> IRC client in a permanent browser tab. It is made possible by <a href="https://github.com/chjj/tty.js/">tty.js</a>, a great node.js based project that makes the command line accessible in the browser (using a lightweight webserver). A basic setup with IRSSI running on the local machine is quite easy, but it gets a little tricky if you happen to run IRSSI on a server to stay connected all the time. If you run IRSSI on a remote server and want to see it in a browser tab, then this guide is for you.</p>
+
+<!-- more -->
+
+<h2 id="start-irssi-on-the-server-in-screen">Start IRSSI on the server in screen</h2>
+
+<p>First of all, IRSSI has to be running on the server in a detached screen:</p>
+
+<p><code>bash
+$ screen -d -m -S irc irssi
+</code></p>
+
+<p><code>-d -m</code> makes screen start detached and <code>-S irc</code> gives the name <code>irc</code> to the session.</p>
+
+<h2 id="set-up-ttyjs">Set up tty.js</h2>
+
+<p>On your local machine, you will need to have tty.js installed. It runs on <a href="http://nodejs.org/">node.js</a>, so if you don’t have it installed yet, you can download it from <a href="http://www.nodejs.org/download/">here</a>, or install it using the package manager of your linux distribution.</p>
+
+<p>Once you have node.js installed, installing tty.js goes like this:</p>
+
+<p><code>bash
+$ sudo npm install -g tty.js
+</code></p>
+
+<p>The config file of tty.js is located at <code>~/.tty.js/config.json</code>. Put these lines in the config:</p>
+
+<p><code>json
+{
+  "localOnly": true,
+  "port": 8080,
+  "shell": "ssh",
+  "shellArgs": ["-t", "user@yourserver.com", "screen -r irc"]
+}
+</code></p>
+
+<p>Short explanation:</p>
+
+<ul>
+  <li><code>"localOnly": true</code>: listen on the loopback interface (so that it won’t be accessible over the network)</li>
+  <li><code>"port": 8080</code>: run on the 8080 port</li>
+  <li><code>"shell": "ssh"</code>: use <code>ssh</code> instead of a standard terminal</li>
+  <li><code>"shellArgs": ["-t", "user@yourserver.com", "screen -r irc"]</code>: connect to the server and attach to the screen session named <code>irc</code></li>
+</ul>
+
+<p>Now you can start it with the <code>tty.js</code> command. To test it, open <a href="http://localhost:8080">localhost:8080</a> in your browser and click on the “Open Terminal” button. You should see IRSSI running in the opening terminal window.</p>
+
+<h2 id="start-everything-automatically">Start everything automatically</h2>
+
+<p>Add the <code>tty.js</code> command to the autorun list of you window manager (on Gnome, use <code>gnome-session-properties</code>), and use “tab pinning” in your favorite browser to have a permanent IRC tab open.</p>
+
+<p>The only remaining problem is that the “Open Terminal” button have to be clicked when you first switch to the IRC tab. Add these lines to the end of the <code>index.html</code> file of tty.js (which is usually located at <code>/usr/local/lib/node_modules/tty.js/static/index.html</code>):</p>
+
+<p><code>html
+&lt;script&gt;
+  tty.on('connect', function() {
+    var w = new tty.Window();
+    setTimeout(function() { w.maximize(); }, 200);
+  });
+&lt;/script&gt;
+</code></p>
+
+<p>And that’s all :)</p>
+
+
+
+                <hr>
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/blog/2013/05/12/javascript-programozas-jegyzet-a-jquery-fuggvenykonyvtar/" data-toggle="tooltip" data-placement="top" title="JavaScript programozás - A jQuery függvénykönyvtár">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/blog/2013/06/08/biztonsagos-programozas-rust-nyelven/" data-toggle="tooltip" data-placement="top" title="Biztonságos programozás Rust nyelven">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<hr>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <li>
+                        <a href="/feed.xml">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://twitter.com/molnar_g">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li>
+                        <a href="https://www.facebook.com/mr.gabor.molnar">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li>
+                        <a href="https://github.com/molnarg">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <p class="copyright text-muted">Copyright &copy; Gábor Molnár 2015</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/clean-blog.min.js "></script>
+
+
+</body>
+
+</html>
