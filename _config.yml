@@ -10,7 +10,7 @@ github_username:  molnarg
 facebook_username:  mr.gabor.molnar
 
 # Build settings
-markdown: kramdown
+markdown: redcarpet
 highlighter: pygments
 permalink: /blog/:year/:month/:day/:title/
 paginate: 5
