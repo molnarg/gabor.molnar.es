@@ -1,17 +1,17 @@
 # Site settings
-title: Clean Blog
+title: Gábor Molnár
 header-img: img/home-bg.jpg
-email: your-email@yourdomain.com
+email: gabor@molnar.es
 description: "Write your site description here. It will be used as your sites meta description as well!"
-baseurl: "/startbootstrap-clean-blog-jekyll"
-url: "http://yourdomain.com"
-twitter_username: SBootstrap
-github_username:  davidtmiller
-facebook_username:  IronSummitMedia
+baseurl: 
+url: "http://gabor.molnar.es"
+twitter_username: molnar_g
+github_username:  molnarg
+facebook_username:  mr.gabor.molnar
 
 # Build settings
 markdown: kramdown
 highlighter: pygments
-permalink: pretty
+permalink: /blog/:year/:month/:day/:title/
 paginate: 5
 exclude: ["less","node_modules","Gruntfile.js","package.json","README.md"]
