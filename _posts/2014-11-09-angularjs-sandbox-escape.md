@@ -2,6 +2,7 @@
 layout:     post
 title:      An AngularJS Template Expression Sandbox Escape
 date:       2014-11-09 00:00
+canonical:  https://gist.github.com/molnarg/5348cd4254cabc1d4f7b
 ---
 
 Short Proof of Concept
